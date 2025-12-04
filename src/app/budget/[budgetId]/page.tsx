@@ -7,11 +7,12 @@ import { AddTransactionSheet } from '@/components/add-transaction-sheet';
 import { PageTransition } from '@/components/page-transition';
 import { User, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { useBudget } from '@/lib/hooks/use-app-context';
+import { useBudget, useAppContext } from '@/lib/hooks/use-app-context';
 import { Button } from '@/components/ui/button';
 
 export default function BudgetDashboardPage({ params }: { params: { budgetId: string } }) {
   const { budget, transactions } = useBudget(params.budgetId);
+  const { profile } = useAppContext();
 
   if (!budget) {
     return (
@@ -49,8 +50,8 @@ export default function BudgetDashboardPage({ params }: { params: { budgetId: st
             <h1 className="text-2xl font-bold text-foreground">Genel Bakış</h1>
           </div>
           <Avatar>
-            <AvatarImage src="https://picsum.photos/seed/10/100/100" data-ai-hint="person portrait" />
-            <AvatarFallback>FF</AvatarFallback>
+            <AvatarImage src={profile?.photo_url || ''} data-ai-hint="person portrait" />
+            <AvatarFallback>{profile?.display_name?.charAt(0)}</AvatarFallback>
           </Avatar>
         </header>
 

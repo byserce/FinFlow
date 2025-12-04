@@ -20,9 +20,10 @@ import {
 } from '@/components/ui/dialog';
 import { createBudget } from './actions';
 import { useToast } from '@/hooks/use-toast';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function BudgetsPage() {
-  const { budgets, user } = useAppContext();
+  const { budgets, user, profile } = useAppContext();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -67,11 +68,17 @@ export default function BudgetsPage() {
     <PageTransition>
       <div className="p-4 md:p-6 space-y-6">
         <header className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Bütçelerim</h1>
-            <p className="text-muted-foreground">
-              Tüm bütçelerinizi yönetin
-            </p>
+          <div className="flex items-center gap-4">
+             <Avatar>
+              <AvatarImage src={profile?.photo_url || ''} data-ai-hint="person portrait" />
+              <AvatarFallback>{profile?.display_name?.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-2xl font-bold">Hoşgeldin, {profile?.display_name}</h1>
+              <p className="text-muted-foreground">
+                Tüm bütçelerinizi yönetin
+              </p>
+            </div>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
