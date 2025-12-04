@@ -7,15 +7,32 @@ import { AddTransactionSheet } from '@/components/add-transaction-sheet';
 import { PageTransition } from '@/components/page-transition';
 import { User, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { useAppContext } from '@/hooks/use-app-context';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/hooks/use-user';
-import { useBudget } from '@/lib/hooks/use-app-context';
+import type { Budget } from '@/lib/types';
 
-export default function BudgetDashboardPage({ params }: { params: { budgetId: string } }) {
-  const { budget } = useBudget(params.budgetId);
+
+interface BudgetDashboardPageProps {
+  budgets: Budget[];
+  isBudgetsLoading: boolean;
+  params: { budgetId: string };
+}
+
+
+export default function BudgetDashboardPage({ budgets = [], isBudgetsLoading, params }: BudgetDashboardPageProps) {
   const { user } = useUser();
+  const budget = budgets.find(b => b.id === params.budgetId);
   
+  if (isBudgetsLoading) {
+    return (
+        <PageTransition>
+            <div className="flex flex-col items-center justify-center h-[80vh] text-center p-4">
+                <h1 className="text-2xl font-bold">Bütçe Yükleniyor...</h1>
+            </div>
+        </PageTransition>
+    )
+  }
+
   if (!budget) {
     return (
       <PageTransition>

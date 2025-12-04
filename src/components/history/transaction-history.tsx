@@ -2,21 +2,20 @@
 import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { useBudget } from '@/lib/hooks/use-app-context';
 import { format, isToday, isYesterday, parseISO } from 'date-fns';
 import { CategoryIcon } from '@/components/transactions/category-icon';
 import { formatCurrency } from '@/lib/utils';
 import { Search } from 'lucide-react';
-import type { Transaction } from '@/lib/types';
+import type { Transaction, Budget } from '@/lib/types';
 import { CATEGORY_INFO } from '@/lib/constants';
 
 
-export function TransactionHistory({ budgetId }: { budgetId: string }) {
-  const { budget } = useBudget(budgetId);
+export function TransactionHistory({ budget }: { budget?: Budget }) {
   const transactions = budget?.transactions || [];
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredTransactions = useMemo(() => {
+    if (!searchTerm) return transactions;
     return transactions.filter(
       (tx) =>
         CATEGORY_INFO[tx.category]?.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -60,44 +59,40 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
       </div>
 
       <div className="space-y-6">
-        {Object.entries(groupedTransactions).map(([day, txs]) => (
-          <div key={day}>
-            <h3 className="text-sm font-semibold text-muted-foreground mb-2">{day}</h3>
-            <Card className="rounded-2xl shadow-sm">
-              <CardContent className="p-4 space-y-4">
-                {txs.map((tx) => (
-                  <div key={tx.id} className="flex items-center">
-                    <CategoryIcon category={tx.category} />
-                    <div className="ml-4 flex-1">
-                      <p className="text-sm font-medium leading-none">{tx.note || CATEGORY_INFO[tx.category]?.label}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {format(parseISO(tx.date), 'h:mm a')}
-                      </p>
+        {Object.keys(groupedTransactions).length > 0 ? (
+          Object.entries(groupedTransactions).map(([day, txs]) => (
+            <div key={day}>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-2">{day}</h3>
+              <Card className="rounded-2xl shadow-sm">
+                <CardContent className="p-4 space-y-4">
+                  {txs.map((tx) => (
+                    <div key={tx.id} className="flex items-center">
+                      <CategoryIcon category={tx.category} />
+                      <div className="ml-4 flex-1">
+                        <p className="text-sm font-medium leading-none">{tx.note || CATEGORY_INFO[tx.category]?.label}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {format(parseISO(tx.date), 'h:mm a')}
+                        </p>
+                      </div>
+                      <div className={`font-medium ${tx.type === 'income' ? 'text-green-500' : 'text-foreground'}`}>
+                         {tx.type === 'income' ? '+' : '-'}
+                         {formatCurrency(tx.amount)}
+                      </div>
                     </div>
-                    <div className={`font-medium ${tx.type === 'income' ? 'text-green-500' : 'text-foreground'}`}>
-                       {tx.type === 'income' ? '+' : '-'}
-                       {formatCurrency(tx.amount)}
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-        ))}
-         {transactions.length === 0 && (
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+          ))
+        ) : (
           <Card className="rounded-2xl shadow-sm">
             <CardContent className="p-10">
-              <p className="text-center text-muted-foreground">Kaydedilmiş bir işleminiz yok.</p>
+              <p className="text-center text-muted-foreground">
+                {transactions.length === 0 ? 'Kaydedilmiş bir işleminiz yok.' : 'Aramanızla eşleşen işlem bulunamadı.'}
+              </p>
             </CardContent>
           </Card>
         )}
-         {transactions.length > 0 && Object.keys(groupedTransactions).length === 0 && (
-          <Card className="rounded-2xl shadow-sm">
-            <CardContent className="p-10">
-              <p className="text-center text-muted-foreground">Aramanızla eşleşen işlem bulunamadı.</p>
-            </CardContent>
-          </Card>
-         )}
       </div>
     </div>
   );

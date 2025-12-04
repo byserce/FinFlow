@@ -5,8 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SpendingChart } from '@/components/analytics/spending-chart';
 import { TrendChart } from '@/components/analytics/trend-chart';
 import { AiInsights } from '@/components/analytics/ai-insights';
-import { useBudget } from '@/lib/hooks/use-app-context';
-import type { Transaction } from '@/lib/types';
+import type { Transaction, Budget } from '@/lib/types';
 import { isWithinInterval, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 
 type TimeRange = 'week' | 'month' | 'year';
@@ -33,8 +32,7 @@ const filterTransactions = (transactions: Transaction[], range: TimeRange): Tran
 };
 
 
-export function AnalyticsView({ budgetId }: { budgetId: string }) {
-  const { budget } = useBudget(budgetId);
+export function AnalyticsView({ budget }: { budget?: Budget }) {
   const transactions = budget?.transactions || [];
   const [timeRange, setTimeRange] = useState<TimeRange>('month');
 
@@ -43,7 +41,7 @@ export function AnalyticsView({ budgetId }: { budgetId: string }) {
   if (!budget) {
     return (
         <div className="p-4 md:p-6 text-center">
-            <p>Bütçe bulunamadı.</p>
+            <p>Bütçe bulunamadı veya yükleniyor...</p>
         </div>
     )
   }

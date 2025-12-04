@@ -1,10 +1,19 @@
+'use client';
 import { AnalyticsView } from "@/components/analytics/analytics-view";
 import { PageTransition } from "@/components/page-transition";
+import type { Budget } from "@/lib/types";
 
-export default function AnalyticsPage({ params }: { params: { budgetId: string }}) {
+interface AnalyticsPageProps {
+  budgets: Budget[];
+  params: { budgetId: string };
+}
+
+export default function AnalyticsPage({ budgets = [], params }: AnalyticsPageProps) {
+  const budget = budgets.find(b => b.id === params.budgetId);
+  
   return (
     <PageTransition>
-      <AnalyticsView budgetId={params.budgetId} />
+      <AnalyticsView budget={budget} />
     </PageTransition>
   );
 }

@@ -5,7 +5,6 @@ import { PageTransition } from '@/components/page-transition';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAppContext } from '@/hooks/use-app-context';
 import { formatCurrency } from '@/lib/utils';
 import { Plus, Users, User, ArrowRight, LogOut } from 'lucide-react';
 import {
@@ -22,19 +21,25 @@ import { createBudget } from './actions';
 import { useUser } from '@/hooks/use-user';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
+import type { Budget } from '@/lib/types';
 
-export default function BudgetsPage() {
-  const { budgets, isLoading } = useAppContext();
-  const { user, logout } = useUser();
+
+interface BudgetsPageProps {
+  budgets: Budget[];
+  isBudgetsLoading: boolean;
+}
+
+export default function BudgetsPage({ budgets = [], isBudgetsLoading }: BudgetsPageProps) {
+  const { user, logout, isLoading: isUserLoading } = useUser();
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  if (isLoading) {
-    return <div>Yükleniyor...</div>
+  if (isUserLoading) {
+    return <div className="flex items-center justify-center h-screen">Yükleniyor...</div>;
   }
 
-  if (!user && !isLoading) {
+  if (!user && !isUserLoading) {
     router.push('/login');
     return null;
   }
@@ -66,6 +71,7 @@ export default function BudgetsPage() {
   const handleLogout = () => {
     logout();
     router.push('/login');
+    router.refresh();
   }
 
   return (
@@ -120,7 +126,11 @@ export default function BudgetsPage() {
         </header>
 
         <div className="space-y-4">
-          {budgets.length > 0 ? (
+          {isBudgetsLoading ? (
+             <div className="text-center py-10">
+                <p className="text-muted-foreground">Bütçeler yükleniyor...</p>
+             </div>
+          ) : budgets.length > 0 ? (
             budgets.map((budget) => (
               <Link href={`/budget/${budget.id}`} key={budget.id} passHref>
                 <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer">
