@@ -16,6 +16,7 @@ export async function createBudget(formData: FormData) {
     }
   }
 
+  // 1. Create the new budget plan
   const { data: budgetData, error: budgetError } = await supabase
     .from('budget_plans')
     .insert([{ name, owner_id: ownerId }])
@@ -29,13 +30,14 @@ export async function createBudget(formData: FormData) {
     }
   }
 
+  // 2. Add the owner as a member in budget_members
   const { error: memberError } = await supabase
     .from('budget_members')
     .insert([{ plan_id: budgetData.id, user_id: ownerId, role: 'owner' }]);
 
   if (memberError) {
     console.error('Error adding budget member:', memberError);
-    // Optionally, delete the created budget to avoid orphaned data
+    // If adding the member fails, delete the created budget to avoid orphaned data
     await supabase.from('budget_plans').delete().eq('id', budgetData.id);
      return {
         error: 'Could not assign budget ownership. Please try again.'
