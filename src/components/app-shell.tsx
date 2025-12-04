@@ -84,17 +84,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     
     setIsLoading(true);
 
-    // 1. Fetch budgets where the user is the owner
-    const { data: ownedPlans, error: ownedError } = await supabase
-      .from('budget_plans')
-      .select('*')
-      .eq('owner_id', user.id);
-
-    if (ownedError) {
-        console.error("Error fetching owned budgets:", ownedError);
-    }
-
-    // 2. Fetch budgets where the user is a member
+    // Fetch all budget plans the user is a member of.
+    // This includes budgets they own, as they are added as a member upon creation.
     const { data: memberEntries, error: memberError } = await supabase
       .from('budget_members')
       .select('budget_plans!inner(*)')
@@ -102,13 +93,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
     if (memberError) {
       console.error("Error fetching member budgets:", memberError);
+      setPlans([]);
+      setTransactionsByPlan({});
+      setIsLoading(false);
+      return;
     }
 
-    const memberPlans = memberEntries?.map(entry => entry.budget_plans).filter(Boolean) as Plan[] || [];
-    
-    // 3. Combine and deduplicate plans
-    const allPlans = [...(ownedPlans || []), ...memberPlans];
-    const uniquePlans = Array.from(new Map(allPlans.map(p => [p.id, p])).values());
+    const uniquePlans = memberEntries?.map(entry => entry.budget_plans).filter(Boolean) as Plan[] || [];
     
     setPlans(uniquePlans);
     
@@ -146,7 +137,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     fetchData();
     // Add a listener for real-time updates
      const subscription = supabase
-      .channel('public:budget_transactions')
+      .channel('public-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_transactions' }, fetchData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_plans' }, fetchData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_members' }, fetchData)
