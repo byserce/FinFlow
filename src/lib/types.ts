@@ -13,6 +13,9 @@ export type Category =
   // Income
   | 'Salary' 
   | 'Gifts'
+  | 'Freelance'
+  | 'Investments'
+  | 'Other Income'
   // Expense
   | 'Food' 
   | 'Transport' 

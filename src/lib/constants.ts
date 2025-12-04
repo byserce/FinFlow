@@ -9,12 +9,18 @@ import {
   HeartPulse,
   MoreHorizontal,
   Gift,
+  DollarSign,
+  TrendingUp,
+  Award,
 } from 'lucide-react';
 
 export const CATEGORY_INFO: Record<Category, CategoryInfo> = {
   // Income
   Salary: { icon: Briefcase, color: 'text-green-500', type: 'income', label: 'Salary' },
   Gifts: { icon: Gift, color: 'text-yellow-500', type: 'income', label: 'Gifts' },
+  Freelance: { icon: DollarSign, color: 'text-blue-500', type: 'income', label: 'Freelance' },
+  Investments: { icon: TrendingUp, color: 'text-purple-500', type: 'income', label: 'Investments' },
+  'Other Income': { icon: Award, color: 'text-indigo-500', type: 'income', label: 'Other Income' },
   
   // Expense
   Food: { icon: Utensils, color: 'text-orange-500', type: 'expense', label: 'Food' },
