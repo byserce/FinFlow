@@ -42,7 +42,6 @@ export async function createBudget(formData: FormData): Promise<{ id?: string; e
     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        console.error('Create budget failed: User not found.');
         return { error: 'Oturum bulunamadı. Lütfen tekrar giriş yapın.' };
     }
 
@@ -61,8 +60,6 @@ export async function createBudget(formData: FormData): Promise<{ id?: string; e
         console.error('Error creating budget:', error);
         return { error: error.message };
     }
-
-    revalidatePath('/');
 
     if (data && data.id) {
       return { id: data.id };

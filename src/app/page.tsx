@@ -43,7 +43,7 @@ export default function BudgetsPage() {
       });
       setIsDialogOpen(false);
       router.push(`/budget/${result.id}`);
-      router.refresh(); // Sayfanın yenilenmesini tetikleyerek yeni bütçenin listede görünmesini sağlar
+      router.refresh();
     }
   };
   
