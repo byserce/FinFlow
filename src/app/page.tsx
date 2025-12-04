@@ -28,24 +28,18 @@ export default function BudgetsPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleCreateBudget = async (formData: FormData) => {
+  const handleFormAction = async (formData: FormData) => {
     const result = await createBudget(formData);
-
     if (result?.error) {
-      toast({
-        variant: 'destructive',
-        title: 'Hata',
-        description: result.error,
-      });
-    } else if (result?.id) {
-      toast({
-        title: 'Başarılı!',
-        description: 'Yeni bütçeniz oluşturuldu.',
-      });
-      setIsDialogOpen(false);
-      // Manually refresh data on the client side after successful creation
-      router.push(`/budget/${result.id}`);
-      router.refresh();
+        toast({
+            variant: 'destructive',
+            title: 'Hata',
+            description: result.error,
+        });
+    } else {
+        // Successful creation is handled by redirect in the action
+        // We just need to close the dialog
+        setIsDialogOpen(false);
     }
   };
   
@@ -88,7 +82,7 @@ export default function BudgetsPage() {
               </Button>
             </DialogTrigger>
             <DialogContent>
-                <form action={handleCreateBudget}>
+                <form action={handleFormAction}>
                     <DialogHeader>
                         <DialogTitle>Yeni Bütçe Oluştur</DialogTitle>
                     </DialogHeader>

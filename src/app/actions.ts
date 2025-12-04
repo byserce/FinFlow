@@ -37,7 +37,7 @@ export async function addTransaction(plan_id: string, formData: FormData) {
   revalidatePath('/'); // Also revalidate the main page to update total balance if shown there
 }
 
-export async function createBudget(formData: FormData): Promise<{ id?: string; error?: string }> {
+export async function createBudget(formData: FormData): Promise<{ error?: string }> {
     const supabase = createClient();
     
     const { data: { user } } = await supabase.auth.getUser();
@@ -61,9 +61,10 @@ export async function createBudget(formData: FormData): Promise<{ id?: string; e
         return { error: error.message };
     }
 
-    if (data && data.id) {
-      return { id: data.id };
+    if (!data?.id) {
+        return { error: 'Bütçe oluşturulamadı, ID alınamadı.' };
     }
-    
-    return { error: 'Bütçe oluşturulamadı.' };
+
+    revalidatePath('/');
+    redirect(`/budget/${data.id}`);
 }
