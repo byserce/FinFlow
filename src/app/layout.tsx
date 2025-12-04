@@ -39,8 +39,7 @@ export default async function RootLayout({
 
     profile = userProfile;
 
-    // 2. If profile doesn't exist, create it.
-    // This handles the case where a user is in auth.users but not in budget_profiles.
+    // 2. If profile doesn't exist, CREATE IT.
     // This is the single source of truth for profile creation after any signup/login event.
     if (!profile) {
       const { data: newProfile, error: createError } = await supabase
@@ -49,6 +48,7 @@ export default async function RootLayout({
           {
             id: user.id,
             email: user.email,
+            // Use metadata if available, otherwise create a fallback display name from email.
             display_name: user.user_metadata.display_name || user.email?.split('@')[0] || 'New User',
             photo_url: user.user_metadata.picture,
           },
@@ -58,11 +58,11 @@ export default async function RootLayout({
       
       if (createError) {
         console.error("Critical: Error creating missing profile:", createError);
-        // If profile creation fails, we might have to sign out the user
-        // or redirect to an error page, as the app won't function correctly.
-        // For now, we'll log it and let the app proceed, though it may be in a broken state.
-        user = undefined; // Prevents further data fetching for a user without a profile
+        // If profile creation fails, we must stop, as the app won't function correctly.
+        // We will clear the user object to prevent passing inconsistent data to the app.
+        user = undefined;
       } else {
+        // The new profile has been successfully created.
         profile = newProfile;
       }
     }
