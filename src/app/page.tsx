@@ -60,6 +60,9 @@ export default function BudgetsPage() {
             description: 'Yeni bütçe oluşturuldu.',
         });
         setIsDialogOpen(false);
+        // Server action handles redirection, but we can refresh client-side if needed
+        // For now, we rely on revalidatePath in the action.
+        router.refresh();
     }
   };
 

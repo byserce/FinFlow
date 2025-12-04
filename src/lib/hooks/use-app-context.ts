@@ -14,8 +14,7 @@ export const useBudget = (budgetId: string) => {
     if (context === undefined) {
         throw new Error('useBudget must be used within an AppProvider');
     }
-    const budget = context.getBudgetById(budgetId);
-    const transactions = context.getTransactionsByBudgetId(budgetId);
+    const budget = context.budgets.find((b) => b.id === budgetId);
     
-    return { budget, transactions };
+    return { budget };
 }

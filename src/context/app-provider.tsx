@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useState, useEffect, useMemo, useCallback } from 'react';
-import type { AppContextType, Budget, Transaction, Plan } from '@/lib/types';
+import type { AppContextType, Budget, Transaction, Plan, Profile } from '@/lib/types';
 import { useUser } from '@/hooks/use-user';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -19,7 +19,7 @@ export function AppProvider({ children, supabase }: AppProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
-    if (!user) {
+    if (!user?.id) {
       setPlans([]);
       setTransactionsByPlan({});
       setIsLoading(false);
@@ -28,12 +28,11 @@ export function AppProvider({ children, supabase }: AppProviderProps) {
     
     setIsLoading(true);
 
-    // Fetch budget plans where the user is a member
     const { data: memberEntries, error: memberError } = await supabase
       .from('budget_members')
-      .select('plan_id, budget_plans(*)')
+      .select('plan_id, budget_plans!inner(*)')
       .eq('user_id', user.id);
-
+      
     if (memberError || !memberEntries) {
       console.error("Error fetching user's budgets:", memberError);
       setPlans([]);
@@ -47,7 +46,6 @@ export function AppProvider({ children, supabase }: AppProviderProps) {
     const planIds = userPlans.map(p => p.id);
     
     if (planIds.length > 0) {
-      // Fetch all transactions for those plans
       const { data: transactions, error: txError } = await supabase
         .from('budget_transactions')
         .select('*')
@@ -76,7 +74,7 @@ export function AppProvider({ children, supabase }: AppProviderProps) {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
+  
   const budgets = useMemo<Budget[]>(() => {
     return plans.map((plan) => {
       const transactions = transactionsByPlan[plan.id] || [];
@@ -88,26 +86,17 @@ export function AppProvider({ children, supabase }: AppProviderProps) {
         ...plan,
         transactions: transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
         balance: balance,
-        members: [], // This could be fetched if needed
+        members: [], 
       };
     });
   }, [plans, transactionsByPlan]);
 
-  const getBudgetById = (id: string) => {
-    return budgets.find((b) => b.id === id);
-  };
-  
-  const getTransactionsByBudgetId = (id: string) => {
-    return transactionsByPlan[id] || [];
-  }
-
-  const value: AppContextType = {
+ const value = useMemo(() => ({
     budgets,
-    getBudgetById,
-    getTransactionsByBudgetId,
+    transactionsByPlan,
     supabase,
     isLoading
-  };
+  }), [budgets, transactionsByPlan, supabase, isLoading]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

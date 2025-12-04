@@ -15,13 +15,12 @@ export type Profile = {
 // Types from Supabase schema
 export type Transaction = Database['public']['Tables']['budget_transactions']['Row'];
 export type Plan = Database['public']['Tables']['budget_plans']['Row'];
-export type Member = Database['public']['Tables']['budget_members']['Row'];
 
 
 export type Budget = Plan & {
   transactions: Transaction[];
   balance: number;
-  members: Member[];
+  members: string[]; // Changed from Member[] to string[]
 };
 
 export type Category = 
@@ -48,10 +47,8 @@ export type CategoryInfo = {
 };
 
 export type AppContextType = {
-  user: Profile | null;
   budgets: Budget[];
-  getBudgetById: (id: string) => Budget | undefined;
-  getTransactionsByBudgetId: (id: string) => Transaction[];
+  transactionsByPlan: { [key: string]: Transaction[] };
   supabase: SupabaseClient<Database>;
   isLoading: boolean;
 };

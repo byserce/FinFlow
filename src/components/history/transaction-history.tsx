@@ -19,7 +19,7 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
   const filteredTransactions = useMemo(() => {
     return transactions.filter(
       (tx) =>
-        CATEGORY_INFO[tx.category].label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        CATEGORY_INFO[tx.category]?.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
         tx.note?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         tx.amount.toString().includes(searchTerm)
     );
@@ -69,7 +69,7 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
                   <div key={tx.id} className="flex items-center">
                     <CategoryIcon category={tx.category} />
                     <div className="ml-4 flex-1">
-                      <p className="text-sm font-medium leading-none">{tx.note || CATEGORY_INFO[tx.category].label}</p>
+                      <p className="text-sm font-medium leading-none">{tx.note || CATEGORY_INFO[tx.category]?.label}</p>
                       <p className="text-sm text-muted-foreground">
                         {format(parseISO(tx.date), 'h:mm a')}
                       </p>

@@ -10,13 +10,12 @@ import Link from 'next/link';
 import { useAppContext } from '@/hooks/use-app-context';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/hooks/use-user';
+import { useBudget } from '@/lib/hooks/use-app-context';
 
 export default function BudgetDashboardPage({ params }: { params: { budgetId: string } }) {
-  const { budgets, transactionsByPlan } = useAppContext();
+  const { budget } = useBudget(params.budgetId);
   const { user } = useUser();
-  const budget = budgets.find(b => b.id === params.budgetId);
-  const transactions = transactionsByPlan[params.budgetId] || [];
-
+  
   if (!budget) {
     return (
       <PageTransition>
@@ -35,11 +34,6 @@ export default function BudgetDashboardPage({ params }: { params: { budgetId: st
       </PageTransition>
     );
   }
-  
-  const budgetWithTransactions = {
-    ...budget,
-    transactions: transactions
-  };
 
   return (
     <PageTransition>
@@ -58,9 +52,9 @@ export default function BudgetDashboardPage({ params }: { params: { budgetId: st
           </Avatar>
         </header>
 
-        <BalanceCard budget={budgetWithTransactions} />
-        <QuickStats budget={budgetWithTransactions} />
-        <RecentTransactions budget={budgetWithTransactions} />
+        <BalanceCard budget={budget} />
+        <QuickStats budget={budget} />
+        <RecentTransactions budget={budget} />
       </div>
       <AddTransactionSheet budgetId={budget.id} />
     </PageTransition>
