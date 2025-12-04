@@ -43,6 +43,7 @@ export default function BudgetsPage() {
         description: 'Yeni bütçeniz oluşturuldu.',
       });
       setIsDialogOpen(false);
+      // Manually refresh data on the client side after successful creation
       router.push(`/budget/${result.id}`);
       router.refresh();
     }
