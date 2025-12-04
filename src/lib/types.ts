@@ -4,13 +4,7 @@ export type { Database } from './types/supabase';
 import { Database } from './types/supabase';
 
 // Manual Profile type based on new schema
-export type Profile = {
-    id: string;
-    email: string;
-    display_name: string | null;
-    photo_url: string | null;
-    // password is not included for security
-};
+export type Profile = Database['public']['Tables']['budget_profiles']['Row'];
 
 // Types from Supabase schema
 export type Transaction = Database['public']['Tables']['budget_transactions']['Row'];

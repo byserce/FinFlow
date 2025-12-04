@@ -12,7 +12,6 @@ import { useUser } from '@/hooks/use-user';
 function BottomNav() {
   const pathname = usePathname();
   const { user } = useUser();
-  const { budgets } = useAppContext();
 
   // Extract budgetId from pathname, e.g., /budget/xyz/analytics -> xyz
   const budgetIdMatch = pathname.match(/budget\/([^/]+)/);

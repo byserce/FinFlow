@@ -79,7 +79,6 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
             description: 'İşlem başarıyla eklendi.',
         });
         setOpen(false);
-        // We don't need router.refresh() because revalidatePath is used in the action
     }
   }
 

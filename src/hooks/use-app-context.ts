@@ -8,3 +8,13 @@ export const useAppContext = () => {
   }
   return context;
 };
+
+export const useBudget = (budgetId: string) => {
+    const context = useContext(AppContext);
+    if (context === undefined) {
+        throw new Error('useBudget must be used within an AppProvider');
+    }
+    const budget = context.budgets.find((b) => b.id === budgetId);
+    
+    return { budget };
+}

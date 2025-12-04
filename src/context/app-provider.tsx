@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useState, useEffect, useMemo, useCallback } from 'react';
-import type { AppContextType, Budget, Transaction, Plan, Profile } from '@/lib/types';
+import type { AppContextType, Budget, Transaction, Plan } from '@/lib/types';
 import { useUser } from '@/hooks/use-user';
 import type { SupabaseClient } from '@supabase/supabase-js';
 

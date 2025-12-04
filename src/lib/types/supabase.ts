@@ -6,9 +6,6 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-// This file is intentionally left with a placeholder as Supabase types are removed.
-// A complete reset would involve deleting the file, but we keep it to avoid breaking imports.
-
 export type Database = {
   public: {
     Tables: {
@@ -18,6 +15,18 @@ export type Database = {
           name: string
           owner_id: string
           created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          owner_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          owner_id?: string
+          created_at?: string
         }
       },
       budget_transactions: {
@@ -32,6 +41,28 @@ export type Database = {
           note: string | null
           created_at: string
         }
+        Insert: {
+          id?: string
+          plan_id: string
+          author_id: string
+          amount: number
+          type: "income" | "expense"
+          category: string
+          date: string
+          note?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          plan_id?: string
+          author_id?: string
+          amount?: number
+          type?: "income" | "expense"
+          category?: string
+          date?: string
+          note?: string | null
+          created_at?: string
+        }
       },
       budget_profiles: {
         Row: {
@@ -39,6 +70,41 @@ export type Database = {
           display_name: string | null
           email: string | null
           photo_url: string | null
+          password?: string | null
+        }
+        Insert: {
+          id: string
+          display_name?: string | null
+          email?: string | null
+          photo_url?: string | null
+          password?: string | null
+        }
+        Update: {
+          id?: string
+          display_name?: string | null
+          email?: string | null
+          photo_url?: string | null
+          password?: string | null
+        }
+      },
+      budget_members: {
+        Row: {
+            plan_id: string
+            user_id: string
+            role: "owner" | "member"
+            created_at: string
+        },
+        Insert: {
+            plan_id: string
+            user_id: string
+            role: "owner" | "member"
+            created_at?: string
+        },
+        Update: {
+            plan_id?: string
+            user_id?: string
+            role?: "owner" | "member"
+            created_at?: string
         }
       }
     }
