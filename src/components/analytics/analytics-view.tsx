@@ -5,7 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SpendingChart } from '@/components/analytics/spending-chart';
 import { TrendChart } from '@/components/analytics/trend-chart';
 import { AiInsights } from '@/components/analytics/ai-insights';
-import type { Transaction, Budget } from '@/lib/types';
+import type { Transaction } from '@/lib/types';
+import { useBudget } from '@/lib/hooks/use-app-context';
 import { isWithinInterval, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 
 type TimeRange = 'week' | 'month' | 'year';
@@ -32,11 +33,17 @@ const filterTransactions = (transactions: Transaction[], range: TimeRange): Tran
 };
 
 
-export function AnalyticsView({ budget }: { budget?: Budget }) {
-  const transactions = budget?.transactions || [];
+export function AnalyticsView({ budgetId }: { budgetId: string }) {
+  const { budget, isLoading } = useBudget(budgetId);
   const [timeRange, setTimeRange] = useState<TimeRange>('month');
 
-  const filteredTransactions = filterTransactions(transactions, timeRange);
+  if (isLoading) {
+     return (
+        <div className="p-4 md:p-6 text-center">
+            <p>Analiz verileri yükleniyor...</p>
+        </div>
+    )
+  }
 
   if (!budget) {
     return (
@@ -45,6 +52,8 @@ export function AnalyticsView({ budget }: { budget?: Budget }) {
         </div>
     )
   }
+
+  const filteredTransactions = filterTransactions(budget.transactions, timeRange);
 
   return (
     <div className="p-4 md:p-6 space-y-6">
@@ -62,8 +71,8 @@ export function AnalyticsView({ budget }: { budget?: Budget }) {
         
         <div className="mt-6 space-y-6">
           <SpendingChart transactions={filteredTransactions} />
-          <TrendChart transactions={transactions} />
-          <AiInsights transactions={transactions} />
+          <TrendChart transactions={budget.transactions} />
+          <AiInsights transactions={budget.transactions} />
         </div>
       </Tabs>
     </div>

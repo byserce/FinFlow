@@ -9,21 +9,19 @@ import { User, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/hooks/use-user';
-import type { Budget } from '@/lib/types';
+import { useBudget } from '@/lib/hooks/use-app-context';
 
 
 interface BudgetDashboardPageProps {
-  budgets: Budget[];
-  isBudgetsLoading: boolean;
   params: { budgetId: string };
 }
 
 
-export default function BudgetDashboardPage({ budgets = [], isBudgetsLoading, params }: BudgetDashboardPageProps) {
+export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps) {
   const { user } = useUser();
-  const budget = budgets.find(b => b.id === params.budgetId);
+  const { budget, isLoading } = useBudget(params.budgetId);
   
-  if (isBudgetsLoading) {
+  if (isLoading) {
     return (
         <PageTransition>
             <div className="flex flex-col items-center justify-center h-[80vh] text-center p-4">

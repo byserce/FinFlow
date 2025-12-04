@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PageTransition } from '@/components/page-transition';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,27 +21,24 @@ import { createBudget } from './actions';
 import { useUser } from '@/hooks/use-user';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
-import type { Budget } from '@/lib/types';
+import { useAppContext } from '@/lib/hooks/use-app-context';
 
 
-interface BudgetsPageProps {
-  budgets: Budget[];
-  isBudgetsLoading: boolean;
-}
-
-export default function BudgetsPage({ budgets = [], isBudgetsLoading }: BudgetsPageProps) {
+export default function BudgetsPage() {
   const { user, logout, isLoading: isUserLoading } = useUser();
+  const { budgets, isLoading: isBudgetsLoading } = useAppContext();
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  if (isUserLoading) {
-    return <div className="flex items-center justify-center h-screen">Yükleniyor...</div>;
-  }
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router]);
 
-  if (!user && !isUserLoading) {
-    router.push('/login');
-    return null;
+  if (isUserLoading || !user) {
+    return <div className="flex items-center justify-center h-screen">Yükleniyor...</div>;
   }
 
   const handleFormAction = async (formData: FormData) => {
@@ -69,7 +66,6 @@ export default function BudgetsPage({ budgets = [], isBudgetsLoading }: BudgetsP
   const handleLogout = () => {
     logout();
     router.push('/login');
-    router.refresh();
   }
 
   return (

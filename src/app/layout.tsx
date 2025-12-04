@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
+import { AppProvider } from '@/context/app-provider';
 import { AppShell } from '@/components/app-shell';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -20,9 +21,9 @@ export default function RootLayout({
   return (
     <html lang="tr" suppressHydrationWarning>
       <body className={cn('font-body antialiased', inter.variable)}>
-        <AppShell>
-            {children}
-        </AppShell>
+        <AppProvider>
+          <AppShell>{children}</AppShell>
+        </AppProvider>
         <Toaster />
       </body>
     </html>

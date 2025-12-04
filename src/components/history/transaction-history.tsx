@@ -6,13 +6,16 @@ import { format, isToday, isYesterday, parseISO } from 'date-fns';
 import { CategoryIcon } from '@/components/transactions/category-icon';
 import { formatCurrency } from '@/lib/utils';
 import { Search } from 'lucide-react';
-import type { Transaction, Budget } from '@/lib/types';
+import type { Transaction } from '@/lib/types';
 import { CATEGORY_INFO } from '@/lib/constants';
+import { useBudget } from '@/lib/hooks/use-app-context';
 
 
-export function TransactionHistory({ budget }: { budget?: Budget }) {
-  const transactions = budget?.transactions || [];
+export function TransactionHistory({ budgetId }: { budgetId: string }) {
+  const { budget, isLoading } = useBudget(budgetId);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const transactions = budget?.transactions || [];
 
   const filteredTransactions = useMemo(() => {
     if (!searchTerm) return transactions;
@@ -45,6 +48,9 @@ export function TransactionHistory({ budget }: { budget?: Budget }) {
     }, {} as Record<string, Transaction[]>);
   }, [filteredTransactions]);
 
+  if (isLoading) {
+    return <div className="text-center py-10">İşlem geçmişi yükleniyor...</div>;
+  }
 
   return (
     <div className="space-y-4">

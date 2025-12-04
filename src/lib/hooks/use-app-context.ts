@@ -16,5 +16,5 @@ export const useBudget = (budgetId: string) => {
     }
     const budget = context.budgets.find((b) => b.id === budgetId);
     
-    return { budget };
+    return { budget, isLoading: context.isLoading };
 }
