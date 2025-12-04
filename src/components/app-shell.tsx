@@ -84,23 +84,37 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     
     setIsLoading(true);
 
+    // 1. Fetch budgets where the user is the owner
+    const { data: ownedPlans, error: ownedError } = await supabase
+      .from('budget_plans')
+      .select('*')
+      .eq('owner_id', user.id);
+
+    if (ownedError) {
+        console.error("Error fetching owned budgets:", ownedError);
+    }
+
+    // 2. Fetch budgets where the user is a member
     const { data: memberEntries, error: memberError } = await supabase
       .from('budget_members')
-      .select('plan_id, budget_plans!inner(*)')
+      .select('budget_plans!inner(*)')
       .eq('user_id', user.id);
-      
-    if (memberError || !memberEntries) {
-      console.error("Error fetching user's budgets:", memberError);
-      setPlans([]);
-      setIsLoading(false);
-      return;
+
+    if (memberError) {
+      console.error("Error fetching member budgets:", memberError);
     }
+
+    const memberPlans = memberEntries?.map(entry => entry.budget_plans).filter(Boolean) as Plan[] || [];
     
-    const userPlans = memberEntries.map(entry => entry.budget_plans).filter(Boolean) as Plan[];
-    setPlans(userPlans);
+    // 3. Combine and deduplicate plans
+    const allPlans = [...(ownedPlans || []), ...memberPlans];
+    const uniquePlans = Array.from(new Map(allPlans.map(p => [p.id, p])).values());
     
-    const planIds = userPlans.map(p => p.id);
+    setPlans(uniquePlans);
     
+    const planIds = uniquePlans.map(p => p.id);
+    
+    // 4. Fetch transactions for all accessible plans
     if (planIds.length > 0) {
       const { data: transactions, error: txError } = await supabase
         .from('budget_transactions')
@@ -127,9 +141,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, [user?.id, supabase]);
 
+
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    // Add a listener for real-time updates
+     const subscription = supabase
+      .channel('public:budget_transactions')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_transactions' }, fetchData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_plans' }, fetchData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_members' }, fetchData)
+      .subscribe();
+
+    // Cleanup subscription on component unmount
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [fetchData, supabase]);
   
   const budgets = useMemo<Budget[]>(() => {
     return plans.map((plan) => {
