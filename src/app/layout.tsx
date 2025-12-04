@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: 'FinFlow',
-  description: 'Your personal finance companion.',
+  description: 'Kişisel finans yol arkadaşınız.',
 };
 
 export default function RootLayout({
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="tr" suppressHydrationWarning>
       <body className={cn('font-body antialiased', inter.variable)}>
         <AppProvider>
           <AppShell>{children}</AppShell>

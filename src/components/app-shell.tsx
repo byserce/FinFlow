@@ -2,29 +2,39 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BarChart2, History, Settings } from 'lucide-react';
+import { Home, BarChart2, History, Settings, Wallet } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-
-const navItems = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/analytics', label: 'Analytics', icon: BarChart2 },
-  { href: '/history', label: 'History', icon: History },
-  { href: '/settings', label: 'Settings', icon: Settings },
-];
+import { useAppContext } from '@/lib/hooks/use-app-context';
 
 function BottomNav() {
   const pathname = usePathname();
+  const { budgets } = useAppContext();
+
+  // Extract budgetId from pathname, e.g., /budget/xyz/analytics -> xyz
+  const budgetIdMatch = pathname.match(/budget\/([^/]+)/);
+  const budgetId = budgetIdMatch ? budgetIdMatch[1] : null;
+
+  const navItems = [
+    { href: '/', label: 'Bütçeler', icon: Wallet, exact: true },
+    { href: `/budget/${budgetId}`, label: 'Genel Bakış', icon: Home },
+    { href: `/budget/${budgetId}/analytics`, label: 'Analiz', icon: BarChart2 },
+    { href: `/budget/${budgetId}/history`, label: 'Geçmiş', icon: History },
+  ];
+
+  // If we are not in a specific budget, only show the Budgets link
+  const itemsToShow = budgetId ? navItems : [navItems[0]];
+
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-20 bg-background/80 backdrop-blur-lg border-t border-border/50 shadow-t-lg md:hidden z-50">
-      <div className="grid h-full grid-cols-4 max-w-lg mx-auto">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
+      <div className={`grid h-full max-w-lg mx-auto grid-cols-${itemsToShow.length}`}>
+        {itemsToShow.map((item) => {
+          const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href!) && item.href !== '/';
           return (
             <Link
-              key={item.href}
-              href={item.href}
+              key={item.label}
+              href={item.href || '/'}
               className="inline-flex flex-col items-center justify-center text-center text-muted-foreground hover:text-foreground group"
             >
               <item.icon

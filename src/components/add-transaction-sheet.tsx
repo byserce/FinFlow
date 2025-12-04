@@ -21,11 +21,11 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, CATEGORY_INFO } from '@/lib/constants';
 import type { Category, Transaction } from '@/lib/types';
-import { useAppContext } from '@/lib/hooks/use-app-context';
 import { ScrollArea } from './ui/scroll-area';
+import { useBudget } from '@/lib/hooks/use-app-context';
 
-export function AddTransactionSheet() {
-  const { addTransaction } = useAppContext();
+export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
+  const { addTransaction } = useBudget(budgetId);
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<Transaction['type']>('expense');
   const [amount, setAmount] = useState('');
@@ -179,7 +179,7 @@ export function AddTransactionSheet() {
               </div>
             </div>
           </ScrollArea>
-          <div className="p-4 border-t">
+          <div className="p-4 border-t sticky bottom-0 bg-background">
             <motion.div whileTap={{ scale: 0.98 }}>
               <Button type="submit" size="lg" className="w-full h-14 rounded-xl text-lg">
                 Save Transaction

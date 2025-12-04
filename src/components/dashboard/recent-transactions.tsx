@@ -1,20 +1,19 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAppContext } from '@/lib/hooks/use-app-context';
 import { formatCurrency } from '@/lib/utils';
 import { format } from 'date-fns';
 import { CategoryIcon } from '@/components/transactions/category-icon';
 import { CATEGORY_INFO } from '@/lib/constants';
+import type { Budget } from '@/lib/types';
 
-export function RecentTransactions() {
-  const { transactions } = useAppContext();
-  const recent = transactions.slice(0, 5);
+export function RecentTransactions({ budget }: { budget: Budget }) {
+  const recent = budget.transactions.slice(0, 5);
 
   return (
     <Card className="rounded-2xl shadow-sm">
       <CardHeader>
-        <CardTitle>Recent Transactions</CardTitle>
+        <CardTitle>Son İşlemler</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -37,8 +36,8 @@ export function RecentTransactions() {
               </div>
             </div>
           ))}
-          {transactions.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center">No transactions yet.</p>
+          {budget.transactions.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center">Henüz işlem yok.</p>
           )}
         </div>
       </CardContent>

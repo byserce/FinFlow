@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { useAppContext } from '@/lib/hooks/use-app-context';
+import { useBudget } from '@/lib/hooks/use-app-context';
 import { format, isToday, isYesterday, parseISO } from 'date-fns';
 import { CategoryIcon } from '@/components/transactions/category-icon';
 import { formatCurrency } from '@/lib/utils';
@@ -11,8 +11,9 @@ import type { Transaction } from '@/lib/types';
 import { CATEGORY_INFO } from '@/lib/constants';
 
 
-export function TransactionHistory() {
-  const { transactions } = useAppContext();
+export function TransactionHistory({ budgetId }: { budgetId: string }) {
+  const { budget } = useBudget(budgetId);
+  const transactions = budget?.transactions || [];
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredTransactions = useMemo(() => {
@@ -30,11 +31,11 @@ export function TransactionHistory() {
       let dayLabel: string;
 
       if (isToday(date)) {
-        dayLabel = 'Today';
+        dayLabel = 'Bugün';
       } else if (isYesterday(date)) {
-        dayLabel = 'Yesterday';
+        dayLabel = 'Dün';
       } else {
-        dayLabel = format(date, 'MMMM d, yyyy');
+        dayLabel = format(date, 'd MMMM yyyy');
       }
 
       if (!acc[dayLabel]) {
@@ -51,7 +52,7 @@ export function TransactionHistory() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
         <Input
-          placeholder="Search transactions..."
+          placeholder="İşlemlerde ara..."
           className="pl-10 h-12 rounded-xl"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -86,14 +87,14 @@ export function TransactionHistory() {
          {transactions.length === 0 && (
           <Card className="rounded-2xl shadow-sm">
             <CardContent className="p-10">
-              <p className="text-center text-muted-foreground">You have no transactions recorded.</p>
+              <p className="text-center text-muted-foreground">Kaydedilmiş bir işleminiz yok.</p>
             </CardContent>
           </Card>
         )}
          {transactions.length > 0 && Object.keys(groupedTransactions).length === 0 && (
           <Card className="rounded-2xl shadow-sm">
             <CardContent className="p-10">
-              <p className="text-center text-muted-foreground">No transactions match your search.</p>
+              <p className="text-center text-muted-foreground">Aramanızla eşleşen işlem bulunamadı.</p>
             </CardContent>
           </Card>
          )}
