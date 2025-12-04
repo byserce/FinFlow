@@ -1,17 +1,27 @@
 import type { LucideIcon } from "lucide-react";
+import type { SupabaseClient } from '@supabase/supabase-js';
 export type { Database } from './types/supabase';
 import { Database } from './types/supabase';
 
+// Manual Profile type based on new schema
+export type Profile = {
+    id: string;
+    email: string;
+    display_name: string | null;
+    photo_url: string | null;
+    // password is not included for security
+};
 
+// Types from Supabase schema
 export type Transaction = Database['public']['Tables']['budget_transactions']['Row'];
 export type Plan = Database['public']['Tables']['budget_plans']['Row'];
-export type Profile = Database['public']['Tables']['budget_profiles']['Row'];
+export type Member = Database['public']['Tables']['budget_members']['Row'];
 
 
 export type Budget = Plan & {
   transactions: Transaction[];
   balance: number;
-  members: any[]; // Replace with member type
+  members: Member[];
 };
 
 export type Category = 
@@ -38,10 +48,10 @@ export type CategoryInfo = {
 };
 
 export type AppContextType = {
-  user: any; // Reverted
-  profile: any; // Reverted
+  user: Profile | null;
   budgets: Budget[];
   getBudgetById: (id: string) => Budget | undefined;
   getTransactionsByBudgetId: (id: string) => Transaction[];
-  supabase: any; // Reverted
+  supabase: SupabaseClient<Database>;
+  isLoading: boolean;
 };

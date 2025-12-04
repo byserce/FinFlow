@@ -1,42 +1,94 @@
 'use client';
 
-import React, { createContext, useMemo } from 'react';
+import React, { createContext, useState, useEffect, useMemo } from 'react';
 import type { AppContextType, Budget, Transaction, Profile, Plan } from '@/lib/types';
-import { User } from 'lucide-react';
+import { useUser } from '@/hooks/use-user';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const calculateBudgetDetails = (transactions: Transaction[]) => {
-  let totalBalance = 0;
-  for (const t of transactions) {
-    if (t.type === 'income') {
-      totalBalance += t.amount;
-    } else {
-      totalBalance -= t.amount;
-    }
-  }
-  return { balance: totalBalance };
-};
-
 type AppProviderProps = {
   children: React.ReactNode;
-  user: any; // Reverted
-  profile: any; // Reverted
-  plans: Plan[];
-  transactionsByPlan: { [key: string]: Transaction[] };
+  supabase: SupabaseClient;
 };
 
-export function AppProvider({ children, plans, transactionsByPlan }: AppProviderProps) {
-  
+export function AppProvider({ children, supabase }: AppProviderProps) {
+  const { user } = useUser();
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [transactionsByPlan, setTransactionsByPlan] = useState<{ [key: string]: Transaction[] }>({});
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      if (!user) {
+        setPlans([]);
+        setTransactionsByPlan({});
+        setIsLoading(false);
+        return;
+      }
+      
+      setIsLoading(true);
+
+      // Fetch budget plans where the user is a member
+      const { data: memberEntries, error: memberError } = await supabase
+        .from('budget_members')
+        .select('plan_id, budget_plans(*)')
+        .eq('user_id', user.id);
+
+      if (memberError || !memberEntries) {
+        console.error("Error fetching user's budgets:", memberError);
+        setPlans([]);
+        setIsLoading(false);
+        return;
+      }
+      
+      const userPlans = memberEntries.map(entry => entry.budget_plans).filter(Boolean) as Plan[];
+      setPlans(userPlans);
+      
+      const planIds = userPlans.map(p => p.id);
+      
+      if (planIds.length > 0) {
+        // Fetch all transactions for those plans
+        const { data: transactions, error: txError } = await supabase
+          .from('budget_transactions')
+          .select('*')
+          .in('plan_id', planIds);
+
+        if (txError) {
+          console.error("Error fetching transactions:", txError);
+          setTransactionsByPlan({});
+        } else {
+          const groupedTxs = transactions.reduce((acc, tx) => {
+            if (!acc[tx.plan_id]) {
+              acc[tx.plan_id] = [];
+            }
+            acc[tx.plan_id].push(tx);
+            return acc;
+          }, {} as { [key: string]: Transaction[] });
+          setTransactionsByPlan(groupedTxs);
+        }
+      } else {
+        setTransactionsByPlan({});
+      }
+
+      setIsLoading(false);
+    }
+
+    fetchData();
+  }, [user, supabase]);
+
   const budgets = useMemo<Budget[]>(() => {
     return plans.map((plan) => {
       const transactions = transactionsByPlan[plan.id] || [];
-      const { balance } = calculateBudgetDetails(transactions);
+      const balance = transactions.reduce((acc, t) => {
+        return acc + (t.type === 'income' ? t.amount : -t.amount);
+      }, 0);
+      
       return {
         ...plan,
         transactions: transactions,
         balance: balance,
-        members: [], 
+        members: [], // This could be fetched if needed
       };
     });
   }, [plans, transactionsByPlan]);
@@ -50,12 +102,12 @@ export function AppProvider({ children, plans, transactionsByPlan }: AppProvider
   }
 
   const value: AppContextType = {
-    user: null,
-    profile: null,
+    user,
     budgets,
     getBudgetById,
     getTransactionsByBudgetId,
-    supabase: null,
+    supabase,
+    isLoading
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

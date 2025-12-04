@@ -23,6 +23,9 @@ import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, CATEGORY_INFO } from '@/lib/cons
 import type { Category } from '@/lib/types';
 import { ScrollArea } from './ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import { addTransaction } from '@/app/actions';
+import { useUser } from '@/hooks/use-user';
+import { useRouter } from 'next/navigation';
 
 export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
   const [open, setOpen] = useState(false);
@@ -30,20 +33,54 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
   const [category, setCategory] = useState<Category | null>(null);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const { toast } = useToast();
+  const { user } = useUser();
+  const router = useRouter();
   
   const handleTypeChange = (newType: 'income' | 'expense') => {
     setType(newType);
     setCategory(null);
   }
 
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    toast({
-        variant: 'destructive',
-        title: 'Hata',
-        description: 'Backend bağlantısı kaldırıldığı için bu işlem yapılamaz.',
-    });
-    setOpen(false);
+
+    if (!user) {
+         toast({
+            variant: 'destructive',
+            title: 'Hata',
+            description: 'İşlem eklemek için giriş yapmalısınız.',
+        });
+        return;
+    }
+    if (!category) {
+        toast({
+            variant: 'destructive',
+            title: 'Hata',
+            description: 'Lütfen bir kategori seçin.',
+        });
+        return;
+    }
+
+    const formData = new FormData(event.currentTarget);
+    formData.set('budgetId', budgetId);
+    formData.set('author_id', user.id);
+    
+    const result = await addTransaction(formData);
+
+    if (result?.error) {
+        toast({
+            variant: 'destructive',
+            title: 'Hata',
+            description: result.error,
+        });
+    } else {
+        toast({
+            title: 'Başarılı',
+            description: 'İşlem başarıyla eklendi.',
+        });
+        setOpen(false);
+        // We don't need router.refresh() because revalidatePath is used in the action
+    }
   }
 
   const categoriesToShow = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
@@ -68,7 +105,7 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
         className="h-[90vh] rounded-t-2xl p-0 flex flex-col"
       >
         <SheetHeader className="p-4 border-b">
-          <SheetTitle className="text-center text-xl">Add Transaction</SheetTitle>
+          <SheetTitle className="text-center text-xl">İşlem Ekle</SheetTitle>
         </SheetHeader>
         <form 
             onSubmit={handleFormSubmit}
@@ -98,7 +135,7 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
                     )}
                     size="sm"
                   >
-                    Income
+                    Gelir
                   </Button>
                   <Button
                     type="button"
@@ -109,14 +146,14 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
                     )}
                     size="sm"
                   >
-                    Expense
+                    Gider
                   </Button>
                 </div>
               </div>
 
               {/* Categories */}
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-2">Category</h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Kategori</h3>
                  <input type="hidden" name="category" value={category || ''} />
                 <div className="grid grid-cols-4 gap-4">
                   {categoriesToShow.map((cat) => {
@@ -151,7 +188,7 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {date ? format(date, 'PPP') : <span>Pick a date</span>}
+                      {date ? format(date, 'PPP') : <span>Tarih Seç</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -165,7 +202,7 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
                 </Popover>
                 <Input
                   name="note"
-                  placeholder="Note (optional)"
+                  placeholder="Not (isteğe bağlı)"
                   className="h-12 rounded-xl"
                 />
               </div>
@@ -174,7 +211,7 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
           <div className="p-4 border-t sticky bottom-0 bg-background">
             <motion.div whileTap={{ scale: 0.98 }}>
               <Button type="submit" size="lg" className="w-full h-14 rounded-xl text-lg">
-                Save Transaction
+                İşlemi Kaydet
               </Button>
             </motion.div>
           </div>

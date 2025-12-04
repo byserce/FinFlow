@@ -2,13 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BarChart2, History, Settings, Wallet } from 'lucide-react';
+import { Home, BarChart2, History, Wallet } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { useAppContext } from '@/lib/hooks/use-app-context';
+import { useAppContext } from '@/hooks/use-app-context';
+import { useUser } from '@/hooks/use-user';
+
 
 function BottomNav() {
   const pathname = usePathname();
+  const { user } = useUser();
   const { budgets } = useAppContext();
 
   // Extract budgetId from pathname, e.g., /budget/xyz/analytics -> xyz
@@ -24,17 +27,22 @@ function BottomNav() {
 
   // If we are not in a specific budget, only show the Budgets link
   const itemsToShow = budgetId ? navItems : [navItems[0]];
+  
+  if (!user) {
+    return null; // Don't show nav if user is not logged in
+  }
 
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-20 bg-background/80 backdrop-blur-lg border-t border-border/50 shadow-t-lg md:hidden z-50">
       <div className={`grid h-full max-w-lg mx-auto grid-cols-${itemsToShow.length}`}>
         {itemsToShow.map((item) => {
-          const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href!) && item.href !== '/';
+          if (!item.href) return null;
+          const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href) && item.href !== '/';
           return (
             <Link
               key={item.label}
-              href={item.href || '/'}
+              href={item.href}
               className="inline-flex flex-col items-center justify-center text-center text-muted-foreground hover:text-foreground group"
             >
               <item.icon

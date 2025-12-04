@@ -5,7 +5,7 @@ import { AppProvider } from '@/context/app-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { AppShell } from '@/components/app-shell';
 import { cn } from '@/lib/utils';
-import { mockTransactions } from '@/lib/data';
+import { createClient } from '@/lib/supabase/client';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -19,28 +19,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
-  const plans = [{
-    id: '1',
-    name: 'Personal Budget',
-    owner_id: '1',
-    created_at: new Date().toISOString()
-  }];
-
-  const transactionsByPlan = {
-    '1': mockTransactions
-  }
-
+  const supabase = createClient();
 
   return (
     <html lang="tr" suppressHydrationWarning>
       <body className={cn('font-body antialiased', inter.variable)}>
-        <AppProvider
-          user={null}
-          profile={null}
-          plans={plans}
-          transactionsByPlan={transactionsByPlan}
-        >
+        <AppProvider supabase={supabase}>
           <AppShell>{children}</AppShell>
           <Toaster />
         </AppProvider>

@@ -5,9 +5,9 @@ import { PageTransition } from '@/components/page-transition';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAppContext } from '@/lib/hooks/use-app-context';
+import { useAppContext } from '@/hooks/use-app-context';
 import { formatCurrency } from '@/lib/utils';
-import { Plus, Users, User, ArrowRight } from 'lucide-react';
+import { Plus, Users, User, ArrowRight, LogOut } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -18,62 +18,105 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { createBudget } from './actions';
+import { useUser } from '@/hooks/use-user';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useRouter } from 'next/navigation';
 
 export default function BudgetsPage() {
-  const { budgets } = useAppContext();
+  const { budgets, isLoading } = useAppContext();
+  const { user, logout } = useUser();
+  const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  if (isLoading) {
+    return <div>Yükleniyor...</div>
+  }
+
+  if (!user && !isLoading) {
+    router.push('/login');
+    return null;
+  }
+
+  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    toast({
-      variant: 'destructive',
-      title: 'Hata',
-      description: 'Backend bağlantısı kaldırıldığı için bu işlem yapılamaz.',
-    });
-    setIsDialogOpen(false);
+    const formData = new FormData(event.currentTarget);
+    if (user) {
+        formData.append('owner_id', user.id);
+    }
+    
+    const result = await createBudget(formData);
+    
+    if (result?.error) {
+         toast({
+            variant: 'destructive',
+            title: 'Hata',
+            description: result.error,
+        });
+    } else {
+        toast({
+            title: 'Başarılı',
+            description: 'Yeni bütçe oluşturuldu.',
+        });
+        setIsDialogOpen(false);
+    }
   };
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  }
 
   return (
     <PageTransition>
       <div className="p-4 md:p-6 space-y-6">
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-4">
+             <Avatar>
+                <AvatarImage src={user?.photo_url ?? undefined} />
+                <AvatarFallback>{user?.display_name?.charAt(0) ?? 'U'}</AvatarFallback>
+            </Avatar>
             <div>
-              <h1 className="text-2xl font-bold">Hoşgeldin</h1>
+              <h1 className="text-2xl font-bold">Hoşgeldin, {user?.display_name}</h1>
               <p className="text-muted-foreground">
                 Tüm bütçelerinizi yönetin
               </p>
             </div>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" /> Yeni Bütçe
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-                <form onSubmit={handleFormSubmit}>
-                    <DialogHeader>
-                        <DialogTitle>Yeni Bütçe Oluştur</DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <Input
-                        id="name"
-                        name="name"
-                        placeholder="Bütçe adı (örn: Aile Bütçesi)"
-                        required
-                        />
-                    </div>
-                    <DialogFooter>
-                        <DialogClose asChild>
-                        <Button variant="outline">İptal</Button>
-                        </DialogClose>
-                        <Button type="submit">Oluştur</Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-          </Dialog>
+          <div className='flex items-center gap-2'>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                <Button>
+                    <Plus className="mr-2 h-4 w-4" /> Yeni Bütçe
+                </Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <form onSubmit={handleFormSubmit}>
+                        <DialogHeader>
+                            <DialogTitle>Yeni Bütçe Oluştur</DialogTitle>
+                        </DialogHeader>
+                        <div className="py-4">
+                            <Input
+                            id="name"
+                            name="name"
+                            placeholder="Bütçe adı (örn: Aile Bütçesi)"
+                            required
+                            />
+                        </div>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                            <Button variant="outline">İptal</Button>
+                            </DialogClose>
+                            <Button type="submit">Oluştur</Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+            <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout">
+                <LogOut className="h-5 w-5" />
+            </Button>
+           </div>
         </header>
 
         <div className="space-y-4">

@@ -7,12 +7,15 @@ import { AddTransactionSheet } from '@/components/add-transaction-sheet';
 import { PageTransition } from '@/components/page-transition';
 import { User, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { useBudget, useAppContext } from '@/lib/hooks/use-app-context';
+import { useAppContext } from '@/hooks/use-app-context';
 import { Button } from '@/components/ui/button';
+import { useUser } from '@/hooks/use-user';
 
 export default function BudgetDashboardPage({ params }: { params: { budgetId: string } }) {
-  const { budget, transactions } = useBudget(params.budgetId);
-  const { profile } = useAppContext();
+  const { budgets, transactionsByPlan } = useAppContext();
+  const { user } = useUser();
+  const budget = budgets.find(b => b.id === params.budgetId);
+  const transactions = transactionsByPlan[params.budgetId] || [];
 
   if (!budget) {
     return (
@@ -50,8 +53,8 @@ export default function BudgetDashboardPage({ params }: { params: { budgetId: st
             <h1 className="text-2xl font-bold text-foreground">Genel Bakış</h1>
           </div>
           <Avatar>
-            <AvatarImage src={'https://picsum.photos/seed/avatar/40/40'} data-ai-hint="person portrait" />
-            <AvatarFallback>U</AvatarFallback>
+            <AvatarImage src={user?.photo_url ?? undefined} data-ai-hint="person portrait" />
+            <AvatarFallback>{user?.display_name?.charAt(0) ?? 'U'}</AvatarFallback>
           </Avatar>
         </header>
 

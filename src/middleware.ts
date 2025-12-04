@@ -1,5 +1,7 @@
-import { type NextRequest, NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
+// This middleware is now empty as we are not using Supabase Auth cookies.
+// All auth logic is handled on the client-side via localStorage.
 export function middleware(request: NextRequest) {
   return NextResponse.next()
 }
