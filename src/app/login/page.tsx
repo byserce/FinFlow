@@ -10,6 +10,8 @@ export default function LoginPage({
 }: {
   searchParams: { message: string };
 }) {
+  const message = searchParams?.message;
+
   return (
     <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
       <Link
@@ -52,9 +54,9 @@ export default function LoginPage({
         <Button asChild variant="outline" className="border border-foreground/20">
           <Link href="/signup">Sign up</Link>
         </Button>
-        {searchParams?.message && (
+        {message && (
           <p className="mt-4 p-4 bg-foreground/10 text-foreground text-center">
-            {searchParams.message}
+            {message}
           </p>
         )}
       </form>
