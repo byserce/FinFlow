@@ -2,7 +2,7 @@
   "entities": {
     "User": {
       "title": "User Profile",
-      "description": "Represents a user's public profile information.",
+      "description": "Represents a user's public profile information, created upon first login.",
       "type": "object",
       "properties": {
         "displayName": {
@@ -38,14 +38,14 @@
         },
         "ownerId": {
           "type": "string",
-          "description": "The UID of the user who owns the budget."
+          "description": "The UID of the user who owns and created the budget."
         },
         "members": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "An array of user UIDs who are members of this budget."
+          "description": "An array of user UIDs who have read/write access to this budget. Includes the owner by default."
         },
         "createdAt": {
           "type": "string",
@@ -84,33 +84,33 @@
         },
         "authorId": {
           "type": "string",
-          "description": "The UID of the user who created the transaction."
+          "description": "The UID of the user who created the transaction. Must be one of the budget's members."
         }
       },
       "required": ["amount", "type", "category", "date", "authorId"]
     }
   },
   "auth": {
-    "providers": ["anonymous"]
+    "providers": ["google.com", "email"]
   },
   "firestore": {
     "/users/{userId}": {
       "schema": {
         "$ref": "#/entities/User"
       },
-      "description": "Stores public user profile data, keyed by user UID."
+      "description": "Stores public user profile data, keyed by user UID. A user can only read/write their own document."
     },
     "/budgets/{budgetId}": {
       "schema": {
         "$ref": "#/entities/Budget"
       },
-      "description": "Main collection for all budgets. Security rules will enforce that only members can read/write."
+      "description": "Main collection for all budgets. Security rules will enforce that only users whose UID is in the 'members' array can read/write."
     },
     "/budgets/{budgetId}/transactions/{transactionId}": {
       "schema": {
         "$ref": "#/entities/Transaction"
       },
-      "description": "Sub-collection for transactions within a specific budget. Inherits access rights from the parent budget."
+      "description": "Sub-collection for transactions within a specific budget. Access is inherited from the parent budget; only budget members can read/write transactions."
     }
   }
 }
