@@ -1,11 +1,10 @@
-'use client';
-import { login } from './actions';
+import { signup } from './actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 
-export default function LoginPage({
+export default function SignupPage({
   searchParams,
 }: {
   searchParams: { message: string };
@@ -13,7 +12,7 @@ export default function LoginPage({
   return (
     <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
       <Link
-        href="/"
+        href="/login"
         className="absolute left-8 top-8 py-2 px-4 rounded-md no-underline text-foreground bg-btn-background hover:bg-btn-background-hover flex items-center group text-sm"
       >
         <svg
@@ -30,9 +29,11 @@ export default function LoginPage({
         >
           <polyline points="15 18 9 12 15 6" />
         </svg>{' '}
-        Back
+        Back to Login
       </Link>
-      <form className="flex-1 flex flex-col w-full justify-center gap-2 text-foreground">
+      <form
+        className="flex-1 flex flex-col w-full justify-center gap-2 text-foreground"
+      >
         <Label htmlFor="email">Email</Label>
         <Input
           className="rounded-md px-4 py-2 bg-inherit border mb-6"
@@ -48,10 +49,7 @@ export default function LoginPage({
           placeholder="••••••••"
           required
         />
-        <Button formAction={login}>Log in</Button>
-        <Button asChild variant="outline" className="border border-foreground/20">
-          <Link href="/signup">Sign up</Link>
-        </Button>
+        <Button formAction={signup}>Sign up</Button>
         {searchParams?.message && (
           <p className="mt-4 p-4 bg-foreground/10 text-foreground text-center">
             {searchParams.message}
