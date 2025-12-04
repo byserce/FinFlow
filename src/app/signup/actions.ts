@@ -14,15 +14,15 @@ export async function signup(formData: FormData) {
     email,
     password,
     options: {
-      // Disable email confirmation for development to avoid SMTP errors.
-      // In production, you would remove this or set it to true
-      // after configuring your SMTP provider in Supabase.
-      emailRedirectTo: `${origin}/auth/callback`,
+      // This is helpful for local development to avoid SMTP errors.
+      // In production, you would want to enable email confirmation.
+      email_confirm: false,
     },
   })
 
   if (signUpError) {
     console.error('Sign up error:', signUpError)
+    // Redirect with a more specific error message if possible
     return redirect(`/signup?message=${signUpError.message}`)
   }
 
@@ -30,7 +30,7 @@ export async function signup(formData: FormData) {
     return redirect('/signup?message=Could not create user. Please try again.')
   }
 
-  // Create a profile for the new user
+  // Create a profile for the new user in our public table
   const { error: profileError } = await supabase.from('budget_profiles').insert([
     {
       id: signUpData.user.id,
@@ -42,10 +42,10 @@ export async function signup(formData: FormData) {
   if (profileError) {
       console.error('Error creating profile:', profileError);
       // Even if profile creation fails, the user is signed up in Auth.
-      // Let them log in and maybe handle profile creation on first login.
-      // For now, redirect with a generic success message.
-      return redirect('/login?message=Check email to continue sign in process. Profile creation may have failed.');
+      // Redirect to login with a message that indicates a potential issue.
+      return redirect(`/login?message=Signup successful, but profile creation failed. Please log in.`);
   }
 
-  return redirect('/login?message=Check email to continue sign in process')
+  // On successful signup and profile creation, redirect to the login page with a success message.
+  return redirect('/login?message=Signup successful! Please log in to continue.')
 }
