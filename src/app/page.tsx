@@ -44,9 +44,7 @@ export default function BudgetsPage({ budgets = [], isBudgetsLoading }: BudgetsP
     return null;
   }
 
-  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+  const handleFormAction = async (formData: FormData) => {
     if (user) {
         formData.append('owner_id', user.id);
     }
@@ -98,7 +96,7 @@ export default function BudgetsPage({ budgets = [], isBudgetsLoading }: BudgetsP
                 </Button>
                 </DialogTrigger>
                 <DialogContent>
-                    <form onSubmit={handleFormSubmit}>
+                    <form action={handleFormAction}>
                         <DialogHeader>
                             <DialogTitle>Yeni Bütçe Oluştur</DialogTitle>
                         </DialogHeader>
