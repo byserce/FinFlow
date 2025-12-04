@@ -1,4 +1,5 @@
-import { signup } from './actions';
+'use client'
+import { signup, createProfile } from './actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,8 +8,53 @@ import Link from 'next/link';
 export default function SignupPage({
   searchParams,
 }: {
-  searchParams: { message: string };
+  searchParams: { message: string; error?: string; email?: string };
 }) {
+
+  const isCompletingProfile = searchParams.error === 'user_exists';
+
+  if (isCompletingProfile) {
+    return (
+        <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
+            <h1 className="text-2xl font-bold mb-4">Profilinizi Tamamlayın</h1>
+            <p className="text-muted-foreground mb-4">
+                Görünüşe göre zaten bir hesabınız var ama profiliniz eksik. Lütfen bilgilerinizi tamamlayın.
+            </p>
+             <p className="text-muted-foreground mb-4">
+                Önce <Link href="/login" className="underline font-bold">giriş yapmanız</Link> gerekebilir.
+            </p>
+            <form
+                className="flex-1 flex flex-col w-full justify-center gap-4 text-foreground"
+            >
+                <Label htmlFor="email">E-posta</Label>
+                <Input
+                    name="email"
+                    defaultValue={searchParams.email}
+                    required
+                    disabled
+                    className="bg-muted"
+                />
+
+                <Label htmlFor="display_name">Görünüm Adı</Label>
+                <Input
+                    name="display_name"
+                    placeholder="Adınız"
+                    required
+                />
+                
+                <Button formAction={createProfile}>Profili Oluştur ve Devam Et</Button>
+
+                {searchParams?.message && (
+                <p className="mt-4 p-4 bg-foreground/10 text-foreground text-center">
+                    {searchParams.message}
+                </p>
+                )}
+            </form>
+        </div>
+    )
+  }
+
+
   return (
     <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
       <Link
@@ -29,19 +75,26 @@ export default function SignupPage({
         >
           <polyline points="15 18 9 12 15 6" />
         </svg>{' '}
-        Back to Login
+        Giriş Sayfasına Geri Dön
       </Link>
       <form
         className="flex-1 flex flex-col w-full justify-center gap-2 text-foreground"
       >
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">E-posta</Label>
         <Input
           className="rounded-md px-4 py-2 bg-inherit border mb-6"
           name="email"
           placeholder="you@example.com"
           required
         />
-        <Label htmlFor="password">Password</Label>
+         <Label htmlFor="display_name">Görünüm Adı</Label>
+        <Input
+          className="rounded-md px-4 py-2 bg-inherit border mb-6"
+          name="display_name"
+          placeholder="Adınız"
+          required
+        />
+        <Label htmlFor="password">Şifre</Label>
         <Input
           className="rounded-md px-4 py-2 bg-inherit border mb-6"
           type="password"
@@ -49,7 +102,7 @@ export default function SignupPage({
           placeholder="••••••••"
           required
         />
-        <Button formAction={signup}>Sign up</Button>
+        <Button formAction={signup}>Kayıt Ol</Button>
         {searchParams?.message && (
           <p className="mt-4 p-4 bg-foreground/10 text-foreground text-center">
             {searchParams.message}

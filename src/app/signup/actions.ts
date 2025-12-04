@@ -10,46 +10,89 @@ export async function signup(formData: FormData) {
   const password = formData.get('password') as string
   const supabase = createClient()
 
-  // Step 1: Sign up the user in Supabase Auth
+  // Step 1: Attempt to sign up the user in Supabase Auth
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      // This is helpful for local development to avoid SMTP errors.
-      // In production, you would want to enable email confirmation.
       email_confirm: false,
     },
   })
 
+  // Case 1: A real error occurred (e.g., weak password)
   if (signUpError) {
-    console.error('Sign up error:', signUpError)
-    // Redirect with a more specific error message if possible
-    return redirect(`/signup?message=${signUpError.message}`)
+      // If the error is that the user already exists, redirect to a special state
+      if (signUpError.message.includes('User already registered')) {
+          return redirect(`/signup?error=user_exists&email=${encodeURIComponent(email)}`);
+      }
+      // For any other signup error, show a generic message
+      return redirect(`/signup?message=${signUpError.message}`)
   }
 
-  // signUpData.user should not be null if there is no error, but we check just in case.
+  // Case 2: Signup is successful, but user object is somehow null (edge case)
   if (!signUpData.user) {
     return redirect('/signup?message=Could not create user. Please try again.')
   }
 
-  // Step 2: Create a profile for the new user in our public table
-  // This runs immediately after the user is created in auth.
+  // Case 3: Successful signup, now create the profile
   const { error: profileError } = await supabase.from('budget_profiles').insert([
     {
       id: signUpData.user.id,
       email: signUpData.user.email,
-      display_name: signUpData.user.email?.split('@')[0] ?? 'New User',
+      display_name: formData.get('display_name') as string || signUpData.user.email?.split('@')[0] || 'New User',
     },
   ]);
 
   if (profileError) {
-      console.error('Error creating profile:', profileError);
-      // IMPORTANT: If profile creation fails, we should inform the user.
-      // For now, we redirect to login, but in a real app, you might want to handle this more gracefully,
-      // maybe by attempting to delete the auth user or showing a specific error page.
-      return redirect(`/signup?message=Could not create your user profile. Error: ${profileError.message}`);
+      // This is a critical failure. The user exists in auth but not profiles.
+      // We log it and redirect to the special state so they can create their profile manually.
+      console.error('Error creating profile during signup:', profileError);
+      return redirect(`/signup?error=user_exists&email=${encodeURIComponent(email)}&message=We could not create your profile automatically. Please complete it below.`);
   }
 
-  // On successful signup AND profile creation, redirect to the login page with a success message.
+  // On successful signup AND profile creation, redirect to login with a success message.
   return redirect('/login?message=Signup successful! Please log in to continue.')
+}
+
+
+// New action to create a profile for an existing auth user
+export async function createProfile(formData: FormData) {
+    const supabase = createClient();
+
+    // First, ensure the user is logged in to get their ID
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        // This should not happen if they just logged in, but as a safeguard...
+        return redirect('/login?message=You must be logged in to create a profile.');
+    }
+
+    const displayName = formData.get('display_name') as string;
+
+    // Check if a profile ALREADY exists, just in case.
+    const { data: existingProfile } = await supabase
+        .from('budget_profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+    
+    if (existingProfile) {
+        return redirect('/?message=Profile already exists.');
+    }
+    
+    // Create the profile
+    const { error: profileError } = await supabase.from('budget_profiles').insert([
+        {
+            id: user.id,
+            email: user.email,
+            display_name: displayName,
+        }
+    ]);
+
+    if (profileError) {
+        return redirect(`/signup?error=user_exists&email=${encodeURIComponent(user.email || '')}&message=${profileError.message}`);
+    }
+
+    // Success! Redirect to the main page.
+    return redirect('/');
 }
