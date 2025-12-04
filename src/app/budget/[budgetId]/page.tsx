@@ -50,8 +50,8 @@ export default function BudgetDashboardPage({ params }: { params: { budgetId: st
             <h1 className="text-2xl font-bold text-foreground">Genel Bakış</h1>
           </div>
           <Avatar>
-            <AvatarImage src={profile?.photo_url || ''} data-ai-hint="person portrait" />
-            <AvatarFallback>{profile?.display_name?.charAt(0)}</AvatarFallback>
+            <AvatarImage src={'https://picsum.photos/seed/avatar/40/40'} data-ai-hint="person portrait" />
+            <AvatarFallback>U</AvatarFallback>
           </Avatar>
         </header>
 

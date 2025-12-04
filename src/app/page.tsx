@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { PageTransition } from '@/components/page-transition';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,58 +17,30 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
-import { createBudget } from './actions';
 import { useToast } from '@/hooks/use-toast';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function BudgetsPage() {
-  const { budgets, user, profile } = useAppContext();
+  const { budgets } = useAppContext();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const router = useRouter();
   const { toast } = useToast();
 
-  const handleFormAction = async (formData: FormData) => {
-    const result = await createBudget(formData);
-    if (result?.error) {
-        toast({
-            variant: 'destructive',
-            title: 'Hata',
-            description: result.error,
-        });
-    } else {
-        // Successful creation is handled by redirect in the action
-        // We just need to close the dialog
-        setIsDialogOpen(false);
-    }
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    toast({
+      variant: 'destructive',
+      title: 'Hata',
+      description: 'Backend bağlantısı kaldırıldığı için bu işlem yapılamaz.',
+    });
+    setIsDialogOpen(false);
   };
-  
-  if (!user) {
-    return (
-         <PageTransition>
-            <div className="flex flex-col items-center justify-center h-[80vh] text-center p-4">
-                <h1 className="text-2xl font-bold">FinFlow'a Hoş Geldiniz</h1>
-                <p className="text-muted-foreground mt-2">
-                    Bütçelerinizi yönetmeye başlamak için lütfen giriş yapın.
-                </p>
-                <Link href="/login" passHref>
-                    <Button className="mt-4">Giriş Yap</Button>
-                </Link>
-            </div>
-        </PageTransition>
-    )
-  }
 
   return (
     <PageTransition>
       <div className="p-4 md:p-6 space-y-6">
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-             <Avatar>
-              <AvatarImage src={profile?.photo_url || ''} data-ai-hint="person portrait" />
-              <AvatarFallback>{profile?.display_name?.charAt(0)}</AvatarFallback>
-            </Avatar>
             <div>
-              <h1 className="text-2xl font-bold">Hoşgeldin, {profile?.display_name}</h1>
+              <h1 className="text-2xl font-bold">Hoşgeldin</h1>
               <p className="text-muted-foreground">
                 Tüm bütçelerinizi yönetin
               </p>
@@ -82,7 +53,7 @@ export default function BudgetsPage() {
               </Button>
             </DialogTrigger>
             <DialogContent>
-                <form action={handleFormAction}>
+                <form onSubmit={handleFormSubmit}>
                     <DialogHeader>
                         <DialogTitle>Yeni Bütçe Oluştur</DialogTitle>
                     </DialogHeader>

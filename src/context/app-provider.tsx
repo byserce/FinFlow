@@ -1,10 +1,8 @@
 'use client';
 
 import React, { createContext, useMemo } from 'react';
-import type { AppContextType, Budget, Database, Transaction } from '@/lib/types';
-import { isThisMonth, parseISO } from 'date-fns';
-import { User } from '@supabase/supabase-js';
-import { createClient } from '@/utils/supabase/client';
+import type { AppContextType, Budget, Transaction, Profile, Plan } from '@/lib/types';
+import { User } from 'lucide-react';
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -22,51 +20,23 @@ const calculateBudgetDetails = (transactions: Transaction[]) => {
 
 type AppProviderProps = {
   children: React.ReactNode;
-  user: User | null;
-  profile: Database['public']['Tables']['budget_profiles']['Row'] | null;
-  plans: Database['public']['Tables']['budget_plans']['Row'][];
-  transactionsByPlan: { [key: string]: Database['public']['Tables']['budget_transactions']['Row'][] };
+  user: any; // Reverted
+  profile: any; // Reverted
+  plans: Plan[];
+  transactionsByPlan: { [key: string]: Transaction[] };
 };
 
-export function AppProvider({ children, user, profile, plans, transactionsByPlan }: AppProviderProps) {
-  const supabase = createClient();
-
-  // This might be unnecessary if you handle real-time updates differently
-  // useEffect(() => {
-  //   const channel = supabase
-  //     .channel('realtime-budgets')
-  //     .on(
-  //       'postgres_changes',
-  //       { event: '*', schema: 'public', table: 'budget_plans' },
-  //       (payload) => {
-  //         // Here you would re-fetch or update state
-  //       }
-  //     )
-  //     .on(
-  //       'postgres_changes',
-  //       { event: '*', schema: 'public', table: 'budget_transactions' },
-  //       (payload) => {
-  //         // Here you would re-fetch or update state
-  //       }
-  //     )
-  //     .subscribe();
-
-  //   return () => {
-  //     supabase.removeChannel(channel);
-  //   };
-  // }, [supabase]);
-
+export function AppProvider({ children, plans, transactionsByPlan }: AppProviderProps) {
+  
   const budgets = useMemo<Budget[]>(() => {
     return plans.map((plan) => {
       const transactions = transactionsByPlan[plan.id] || [];
       const { balance } = calculateBudgetDetails(transactions);
       return {
-        id: plan.id,
-        name: plan.name,
-        owner_id: plan.owner_id,
-        members: [], // This would be fetched from budget_members if needed
+        ...plan,
         transactions: transactions,
         balance: balance,
+        members: [], 
       };
     });
   }, [plans, transactionsByPlan]);
@@ -79,13 +49,13 @@ export function AppProvider({ children, user, profile, plans, transactionsByPlan
     return transactionsByPlan[id] || [];
   }
 
-  const value = {
-    user,
-    profile,
+  const value: AppContextType = {
+    user: null,
+    profile: null,
     budgets,
     getBudgetById,
     getTransactionsByBudgetId,
-    supabase
+    supabase: null,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

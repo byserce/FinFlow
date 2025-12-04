@@ -1,5 +1,4 @@
 import type { LucideIcon } from "lucide-react";
-import type { User, SupabaseClient } from '@supabase/supabase-js';
 export type { Database } from './types/supabase';
 import { Database } from './types/supabase';
 
@@ -35,14 +34,14 @@ export type CategoryInfo = {
   icon: LucideIcon;
   color: string;
   type: 'income' | 'expense';
-  label: string;
+  label:string;
 };
 
 export type AppContextType = {
-  user: User | null;
-  profile: Profile | null;
+  user: any; // Reverted
+  profile: any; // Reverted
   budgets: Budget[];
   getBudgetById: (id: string) => Budget | undefined;
   getTransactionsByBudgetId: (id: string) => Transaction[];
-  supabase: SupabaseClient;
+  supabase: any; // Reverted
 };

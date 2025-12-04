@@ -22,18 +22,28 @@ import { format } from 'date-fns';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, CATEGORY_INFO } from '@/lib/constants';
 import type { Category } from '@/lib/types';
 import { ScrollArea } from './ui/scroll-area';
-import { addTransaction } from '@/app/actions';
-
+import { useToast } from '@/hooks/use-toast';
 
 export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [category, setCategory] = useState<Category | null>(null);
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const { toast } = useToast();
   
   const handleTypeChange = (newType: 'income' | 'expense') => {
     setType(newType);
     setCategory(null);
+  }
+
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    toast({
+        variant: 'destructive',
+        title: 'Hata',
+        description: 'Backend bağlantısı kaldırıldığı için bu işlem yapılamaz.',
+    });
+    setOpen(false);
   }
 
   const categoriesToShow = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
@@ -61,10 +71,7 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
           <SheetTitle className="text-center text-xl">Add Transaction</SheetTitle>
         </SheetHeader>
         <form 
-            action={(formData) => {
-                addTransaction(budgetId, formData);
-                setOpen(false);
-            }}
+            onSubmit={handleFormSubmit}
             className="flex flex-col flex-1 overflow-hidden"
         >
           <ScrollArea className="flex-1 px-4">
