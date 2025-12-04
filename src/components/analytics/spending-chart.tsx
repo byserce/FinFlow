@@ -16,10 +16,11 @@ export function SpendingChart({ transactions }: SpendingChartProps) {
     const expenseTransactions = transactions.filter((t) => t.type === 'expense');
     const spendingByCategory = expenseTransactions.reduce((acc, transaction) => {
       const { category, amount } = transaction;
-      if (!acc[category]) {
-        acc[category] = 0;
+      const categoryLabel = CATEGORY_INFO[category].label;
+      if (!acc[categoryLabel]) {
+        acc[categoryLabel] = 0;
       }
-      acc[category] += amount;
+      acc[categoryLabel] += amount;
       return acc;
     }, {} as Record<string, number>);
 

@@ -5,6 +5,7 @@ import { useAppContext } from '@/lib/hooks/use-app-context';
 import { formatCurrency } from '@/lib/utils';
 import { format } from 'date-fns';
 import { CategoryIcon } from '@/components/transactions/category-icon';
+import { CATEGORY_INFO } from '@/lib/constants';
 
 export function RecentTransactions() {
   const { transactions } = useAppContext();
@@ -21,7 +22,7 @@ export function RecentTransactions() {
             <div key={tx.id} className="flex items-center">
               <CategoryIcon category={tx.category} />
               <div className="ml-4 flex-1">
-                <p className="text-sm font-medium leading-none">{tx.note || tx.category}</p>
+                <p className="text-sm font-medium leading-none">{tx.note || CATEGORY_INFO[tx.category].label}</p>
                 <p className="text-sm text-muted-foreground">
                   {format(new Date(tx.date), 'MMM d, yyyy')}
                 </p>

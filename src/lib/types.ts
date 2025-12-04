@@ -9,11 +9,24 @@ export type Transaction = {
   note?: string;
 };
 
-export type Category = 'Salary' | 'Food' | 'Transport' | 'Housing' | 'Entertainment' | 'Shopping' | 'Health' | 'Other';
+export type Category = 
+  // Income
+  | 'Salary' 
+  | 'Gifts'
+  // Expense
+  | 'Food' 
+  | 'Transport' 
+  | 'Housing' 
+  | 'Entertainment' 
+  | 'Shopping' 
+  | 'Health' 
+  | 'Other';
 
 export type CategoryInfo = {
   icon: LucideIcon;
   color: string;
+  type: 'income' | 'expense';
+  label: string;
 };
 
 export type AppContextType = {
