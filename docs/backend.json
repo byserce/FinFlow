@@ -1,0 +1,116 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Represents a user's public profile information.",
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "photoURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the user's profile picture."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the user account was created."
+        }
+      },
+      "required": ["displayName", "email", "createdAt"]
+    },
+    "Budget": {
+      "title": "Budget",
+      "description": "Represents a single budget, which can be personal or shared.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the budget."
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "The UID of the user who owns the budget."
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "An array of user UIDs who are members of this budget."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the budget was created."
+        }
+      },
+      "required": ["name", "ownerId", "members", "createdAt"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Represents a single financial transaction within a budget.",
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number",
+          "description": "The amount of the transaction."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["income", "expense"],
+          "description": "The type of transaction."
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of the transaction."
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time of the transaction."
+        },
+        "note": {
+          "type": "string",
+          "description": "An optional note for the transaction."
+        },
+        "authorId": {
+          "type": "string",
+          "description": "The UID of the user who created the transaction."
+        }
+      },
+      "required": ["amount", "type", "category", "date", "authorId"]
+    }
+  },
+  "auth": {
+    "providers": ["anonymous"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/User"
+      },
+      "description": "Stores public user profile data, keyed by user UID."
+    },
+    "/budgets/{budgetId}": {
+      "schema": {
+        "$ref": "#/entities/Budget"
+      },
+      "description": "Main collection for all budgets. Security rules will enforce that only members can read/write."
+    },
+    "/budgets/{budgetId}/transactions/{transactionId}": {
+      "schema": {
+        "$ref": "#/entities/Transaction"
+      },
+      "description": "Sub-collection for transactions within a specific budget. Inherits access rights from the parent budget."
+    }
+  }
+}
