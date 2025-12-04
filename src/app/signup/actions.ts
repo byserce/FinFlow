@@ -15,15 +15,21 @@ export async function signup(formData: FormData) {
     email,
     password,
     options: {
-      email_confirm: false,
+      // This is false, so no confirmation email is sent.
+      email_confirm: false, 
+      // We pass metadata which can be used by the layout to create the profile
+      data: {
+        display_name: formData.get('display_name') as string,
+      }
     },
   })
 
-  // Case 1: A real error occurred (e.g., weak password)
+  // Case 1: A real error occurred (e.g., weak password, or user already exists)
   if (signUpError) {
       // If the error is that the user already exists, redirect to a special state
+      // so the user can just log in.
       if (signUpError.message.includes('User already registered')) {
-          return redirect(`/signup?error=user_exists&email=${encodeURIComponent(email)}`);
+          return redirect(`/login?message=Bu kullanıcı zaten kayıtlı. Lütfen giriş yapın.`);
       }
       // For any other signup error, show a generic message
       return redirect(`/signup?message=${signUpError.message}`)
@@ -34,28 +40,14 @@ export async function signup(formData: FormData) {
     return redirect('/signup?message=Could not create user. Please try again.')
   }
 
-  // Case 3: Successful signup, now create the profile
-  const { error: profileError } = await supabase.from('budget_profiles').insert([
-    {
-      id: signUpData.user.id,
-      email: signUpData.user.email,
-      display_name: formData.get('display_name') as string || signUpData.user.email?.split('@')[0] || 'New User',
-    },
-  ]);
-
-  if (profileError) {
-      // This is a critical failure. The user exists in auth but not profiles.
-      // We log it and redirect to the special state so they can create their profile manually.
-      console.error('Error creating profile during signup:', profileError);
-      return redirect(`/signup?error=user_exists&email=${encodeURIComponent(email)}&message=We could not create your profile automatically. Please complete it below.`);
-  }
-
-  // On successful signup AND profile creation, redirect to login with a success message.
-  return redirect('/login?message=Signup successful! Please log in to continue.')
+  // On successful signup, redirect to login with a success message.
+  // The RootLayout will handle profile creation on the first successful login.
+  return redirect('/login?message=Kayıt başarılı! Devam etmek için lütfen giriş yapın.')
 }
 
 
-// New action to create a profile for an existing auth user
+// This action is kept in case the user needs to manually complete their profile,
+// although the new RootLayout logic should make this scenario rare.
 export async function createProfile(formData: FormData) {
     const supabase = createClient();
 
