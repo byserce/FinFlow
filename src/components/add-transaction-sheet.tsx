@@ -20,45 +20,21 @@ import { Plus, Calendar as CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, CATEGORY_INFO } from '@/lib/constants';
-import type { Category, Transaction } from '@/lib/types';
+import type { Category } from '@/lib/types';
 import { ScrollArea } from './ui/scroll-area';
-import { useBudget } from '@/lib/hooks/use-app-context';
+import { addTransaction } from '@/app/actions';
+
 
 export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
-  const { addTransaction } = useBudget(budgetId);
   const [open, setOpen] = useState(false);
-  const [type, setType] = useState<Transaction['type']>('expense');
-  const [amount, setAmount] = useState('');
+  const [type, setType] = useState<'income' | 'expense'>('expense');
   const [category, setCategory] = useState<Category | null>(null);
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [note, setNote] = useState('');
-
-  const handleTypeChange = (newType: Transaction['type']) => {
+  
+  const handleTypeChange = (newType: 'income' | 'expense') => {
     setType(newType);
     setCategory(null);
   }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!amount || !category || !date) {
-      // Basic validation
-      alert('Please fill all required fields');
-      return;
-    }
-    addTransaction({
-      amount: parseFloat(amount),
-      type,
-      category,
-      date: date.toISOString(),
-      note,
-    });
-    // Reset form and close sheet
-    setAmount('');
-    setCategory(null);
-    setDate(new Date());
-    setNote('');
-    setOpen(false);
-  };
 
   const categoriesToShow = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
@@ -79,25 +55,33 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
       </SheetTrigger>
       <SheetContent
         side="bottom"
-        className="h-[90vh] rounded-t-2xl p-0 md:p-6 flex flex-col"
+        className="h-[90vh] rounded-t-2xl p-0 flex flex-col"
       >
-        <SheetHeader className="p-4">
+        <SheetHeader className="p-4 border-b">
           <SheetTitle className="text-center text-xl">Add Transaction</SheetTitle>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 h-full overflow-hidden">
+        <form 
+            action={(formData) => {
+                addTransaction(budgetId, formData);
+                setOpen(false);
+            }}
+            className="flex flex-col flex-1 overflow-hidden"
+        >
           <ScrollArea className="flex-1 px-4">
-            <div className="space-y-6 pb-4">
+            <div className="space-y-6 py-6">
               {/* Amount and Type */}
-              <div className="flex items-center justify-center gap-2 pt-4">
+              <div className="flex items-center justify-center gap-2">
                 <Input
                   type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  name="amount"
+                  step="0.01"
                   placeholder="0.00"
                   className="text-4xl font-bold h-auto w-48 text-center border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                  required
                   autoFocus
                 />
                 <div className="flex rounded-full bg-muted p-1">
+                   <input type="hidden" name="type" value={type} />
                   <Button
                     type="button"
                     onClick={() => handleTypeChange('income')}
@@ -126,6 +110,7 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
               {/* Categories */}
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-2">Category</h3>
+                 <input type="hidden" name="category" value={category || ''} />
                 <div className="grid grid-cols-4 gap-4">
                   {categoriesToShow.map((cat) => {
                     const info = CATEGORY_INFO[cat];
@@ -148,6 +133,7 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
 
               {/* Date and Note */}
               <div className="grid grid-cols-2 gap-4">
+                <input type="hidden" name="date" value={date?.toISOString() || ''} />
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -171,8 +157,7 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
                   </PopoverContent>
                 </Popover>
                 <Input
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
+                  name="note"
                   placeholder="Note (optional)"
                   className="h-12 rounded-xl"
                 />

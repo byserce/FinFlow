@@ -1,20 +1,18 @@
 import type { LucideIcon } from "lucide-react";
+import type { User, SupabaseClient } from '@supabase/supabase-js';
+export type { Database } from './types/supabase';
+import { Database } from './types/supabase';
 
-export type Transaction = {
-  id: string;
-  amount: number;
-  type: 'income' | 'expense';
-  category: Category;
-  date: string; // ISO String
-  note?: string;
-};
 
-export type Budget = {
-  id: string;
-  name: string;
+export type Transaction = Database['public']['Tables']['budget_transactions']['Row'];
+export type Plan = Database['public']['Tables']['budget_plans']['Row'];
+export type Profile = Database['public']['Tables']['budget_profiles']['Row'];
+
+
+export type Budget = Plan & {
   transactions: Transaction[];
   balance: number;
-  shared: boolean;
+  members: any[]; // Replace with member type
 };
 
 export type Category = 
@@ -41,11 +39,10 @@ export type CategoryInfo = {
 };
 
 export type AppContextType = {
+  user: User | null;
+  profile: Profile | null;
   budgets: Budget[];
-  createBudget: (name: string) => void;
   getBudgetById: (id: string) => Budget | undefined;
-  addTransaction: (budgetId: string, transaction: Omit<Transaction, 'id'>) => void;
-  balance: number; // This might be deprecated or represent total balance across budgets
-  monthlyIncome: number; // This might be deprecated
-  monthlyExpenses: number; // This might be deprecated
+  getTransactionsByBudgetId: (id: string) => Transaction[];
+  supabase: SupabaseClient;
 };

@@ -1,136 +1,91 @@
 'use client';
 
-import React, { createContext, useState, useEffect, useMemo, useCallback } from 'react';
-import { mockTransactions } from '@/lib/data';
-import type { AppContextType, Transaction, Budget } from '@/lib/types';
+import React, { createContext, useMemo } from 'react';
+import type { AppContextType, Budget, Database, Transaction } from '@/lib/types';
 import { isThisMonth, parseISO } from 'date-fns';
+import { User } from '@supabase/supabase-js';
+import { createClient } from '@/utils/supabase/client';
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const calculateBudgetDetails = (transactions: Transaction[]) => {
-    const currentMonthTransactions = transactions.filter((t) => isThisMonth(parseISO(t.date)));
-    
-    let income = 0;
-    let expenses = 0;
-    let totalBalance = 0;
-
-    for (const t of transactions) {
-      if (t.type === 'income') {
-        totalBalance += t.amount;
-      } else {
-        totalBalance -= t.amount;
-      }
+  let totalBalance = 0;
+  for (const t of transactions) {
+    if (t.type === 'income') {
+      totalBalance += t.amount;
+    } else {
+      totalBalance -= t.amount;
     }
-    
-    for (const t of currentMonthTransactions) {
-      if (t.type === 'income') {
-        income += t.amount;
-      } else {
-        expenses += t.amount;
-      }
-    }
+  }
+  return { balance: totalBalance };
+};
 
-    return { balance: totalBalance, monthlyIncome: income, monthlyExpenses: expenses };
-}
+type AppProviderProps = {
+  children: React.ReactNode;
+  user: User | null;
+  profile: Database['public']['Tables']['budget_profiles']['Row'] | null;
+  plans: Database['public']['Tables']['budget_plans']['Row'][];
+  transactionsByPlan: { [key: string]: Database['public']['Tables']['budget_transactions']['Row'][] };
+};
 
+export function AppProvider({ children, user, profile, plans, transactionsByPlan }: AppProviderProps) {
+  const supabase = createClient();
 
-export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [isInitialized, setIsInitialized] = useState(false);
+  // This might be unnecessary if you handle real-time updates differently
+  // useEffect(() => {
+  //   const channel = supabase
+  //     .channel('realtime-budgets')
+  //     .on(
+  //       'postgres_changes',
+  //       { event: '*', schema: 'public', table: 'budget_plans' },
+  //       (payload) => {
+  //         // Here you would re-fetch or update state
+  //       }
+  //     )
+  //     .on(
+  //       'postgres_changes',
+  //       { event: '*', schema: 'public', table: 'budget_transactions' },
+  //       (payload) => {
+  //         // Here you would re-fetch or update state
+  //       }
+  //     )
+  //     .subscribe();
 
-  useEffect(() => {
-    try {
-      const storedBudgets = localStorage.getItem('finflow-budgets');
-      if (storedBudgets) {
-        setBudgets(JSON.parse(storedBudgets));
-      } else {
-        const initialBudget: Budget = {
-            id: crypto.randomUUID(),
-            name: 'Kişisel Bütçe',
-            transactions: mockTransactions,
-            balance: 0, // will be recalculated
-            shared: false,
-        };
-        const details = calculateBudgetDetails(initialBudget.transactions);
-        initialBudget.balance = details.balance;
-        setBudgets([initialBudget]);
-      }
-    } catch (error) {
-      console.error("Failed to read from localStorage", error);
-      // Fallback to a default budget
-       const initialBudget: Budget = {
-            id: crypto.randomUUID(),
-            name: 'Kişisel Bütçe',
-            transactions: mockTransactions,
-            balance: 0, // will be recalculated
-            shared: false,
-        };
-        const details = calculateBudgetDetails(initialBudget.transactions);
-        initialBudget.balance = details.balance;
-        setBudgets([initialBudget]);
-    }
-    setIsInitialized(true);
-  }, []);
+  //   return () => {
+  //     supabase.removeChannel(channel);
+  //   };
+  // }, [supabase]);
 
-  useEffect(() => {
-    if (isInitialized) {
-      try {
-        const budgetsToStore = budgets.map(b => {
-            const details = calculateBudgetDetails(b.transactions);
-            return { ...b, balance: details.balance };
-        });
-        localStorage.setItem('finflow-budgets', JSON.stringify(budgetsToStore));
-      } catch (error) {
-        console.error("Failed to write to localStorage", error);
-      }
-    }
-  }, [budgets, isInitialized]);
+  const budgets = useMemo<Budget[]>(() => {
+    return plans.map((plan) => {
+      const transactions = transactionsByPlan[plan.id] || [];
+      const { balance } = calculateBudgetDetails(transactions);
+      return {
+        id: plan.id,
+        name: plan.name,
+        owner_id: plan.owner_id,
+        members: [], // This would be fetched from budget_members if needed
+        transactions: transactions,
+        balance: balance,
+      };
+    });
+  }, [plans, transactionsByPlan]);
 
-  const createBudget = useCallback((name: string) => {
-    const newBudget: Budget = {
-      id: crypto.randomUUID(),
-      name,
-      transactions: [],
-      balance: 0,
-      shared: false, // Default to not shared
-    };
-    setBudgets((prev) => [...prev, newBudget]);
-  }, []);
-
-  const addTransaction = useCallback((budgetId: string, transaction: Omit<Transaction, 'id'>) => {
-    const newTransaction = { ...transaction, id: crypto.randomUUID() };
-    setBudgets((prev) =>
-      prev.map((budget) => {
-        if (budget.id === budgetId) {
-          const updatedTransactions = [newTransaction, ...budget.transactions];
-          return { ...budget, transactions: updatedTransactions };
-        }
-        return budget;
-      })
-    );
-  }, []);
-
-  const getBudgetById = useCallback((id: string) => {
-    return budgets.find(b => b.id === id);
-  }, [budgets]);
+  const getBudgetById = (id: string) => {
+    return budgets.find((b) => b.id === id);
+  };
   
-
-  // These values might need to be recalculated based on a selected budget or total
-  const { balance, monthlyIncome, monthlyExpenses } = useMemo(() => {
-    let totalBalance = 0;
-    budgets.forEach(b => totalBalance += b.balance);
-    // For now, we'll just return total. Specifics will be per budget.
-    return { balance: totalBalance, monthlyIncome: 0, monthlyExpenses: 0 };
-  }, [budgets]);
+  const getTransactionsByBudgetId = (id: string) => {
+    return transactionsByPlan[id] || [];
+  }
 
   const value = {
+    user,
+    profile,
     budgets,
-    createBudget,
     getBudgetById,
-    addTransaction,
-    balance,
-    monthlyIncome,
-    monthlyExpenses,
+    getTransactionsByBudgetId,
+    supabase
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

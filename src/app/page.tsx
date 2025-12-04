@@ -17,19 +17,27 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
+import { createBudget } from './actions';
 
 export default function BudgetsPage() {
-  const { budgets, createBudget } = useAppContext();
-  const [newBudgetName, setNewBudgetName] = useState('');
+  const { budgets, user } = useAppContext();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleCreateBudget = () => {
-    if (newBudgetName.trim()) {
-      createBudget(newBudgetName.trim());
-      setNewBudgetName('');
-      setIsDialogOpen(false);
-    }
-  };
+  if (!user) {
+    return (
+         <PageTransition>
+            <div className="flex flex-col items-center justify-center h-[80vh] text-center p-4">
+                <h1 className="text-2xl font-bold">FinFlow'a Hoş Geldiniz</h1>
+                <p className="text-muted-foreground mt-2">
+                    Bütçelerinizi yönetmeye başlamak için lütfen giriş yapın.
+                </p>
+                <Link href="/login" passHref>
+                    <Button className="mt-4">Giriş Yap</Button>
+                </Link>
+            </div>
+        </PageTransition>
+    )
+  }
 
   return (
     <PageTransition>
@@ -48,22 +56,25 @@ export default function BudgetsPage() {
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Yeni Bütçe Oluştur</DialogTitle>
-              </DialogHeader>
-              <div className="py-4">
-                <Input
-                  placeholder="Bütçe adı (örn: Aile Bütçesi)"
-                  value={newBudgetName}
-                  onChange={(e) => setNewBudgetName(e.target.value)}
-                />
-              </div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="outline">İptal</Button>
-                </DialogClose>
-                <Button onClick={handleCreateBudget}>Oluştur</Button>
-              </DialogFooter>
+                <form action={createBudget} onSubmit={() => setIsDialogOpen(false)}>
+                    <DialogHeader>
+                        <DialogTitle>Yeni Bütçe Oluştur</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Input
+                        id="name"
+                        name="name"
+                        placeholder="Bütçe adı (örn: Aile Bütçesi)"
+                        required
+                        />
+                    </div>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                        <Button variant="outline">İptal</Button>
+                        </DialogClose>
+                        <Button type="submit">Oluştur</Button>
+                    </DialogFooter>
+                </form>
             </DialogContent>
           </Dialog>
         </header>
@@ -76,7 +87,7 @@ export default function BudgetsPage() {
                   <CardHeader>
                     <CardTitle className="flex justify-between items-center">
                       <span className="flex items-center">
-                        {budget.shared ? (
+                        {budget.members && budget.members.length > 1 ? (
                           <Users className="mr-2 text-primary" />
                         ) : (
                           <User className="mr-2 text-primary" />

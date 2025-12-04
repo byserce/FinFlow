@@ -5,12 +5,13 @@ import { QuickStats } from '@/components/dashboard/quick-stats';
 import { RecentTransactions } from '@/components/dashboard/recent-transactions';
 import { AddTransactionSheet } from '@/components/add-transaction-sheet';
 import { PageTransition } from '@/components/page-transition';
-import { useBudget } from '@/lib/hooks/use-app-context';
-import { Users, User, ArrowLeft } from 'lucide-react';
+import { User, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useBudget } from '@/lib/hooks/use-app-context';
+import { Button } from '@/components/ui/button';
 
 export default function BudgetDashboardPage({ params }: { params: { budgetId: string } }) {
-  const { budget } = useBudget(params.budgetId);
+  const { budget, transactions } = useBudget(params.budgetId);
 
   if (!budget) {
     return (
@@ -30,6 +31,11 @@ export default function BudgetDashboardPage({ params }: { params: { budgetId: st
       </PageTransition>
     );
   }
+  
+  const budgetWithTransactions = {
+    ...budget,
+    transactions: transactions
+  };
 
   return (
     <PageTransition>
@@ -37,7 +43,7 @@ export default function BudgetDashboardPage({ params }: { params: { budgetId: st
         <header className="flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground flex items-center">
-              {budget.shared ? <Users className="w-4 h-4 mr-2" /> : <User className="w-4 h-4 mr-2" />}
+              <User className="w-4 h-4 mr-2" />
               {budget.name}
             </p>
             <h1 className="text-2xl font-bold text-foreground">Genel Bakış</h1>
@@ -48,9 +54,9 @@ export default function BudgetDashboardPage({ params }: { params: { budgetId: st
           </Avatar>
         </header>
 
-        <BalanceCard budget={budget} />
-        <QuickStats budget={budget} />
-        <RecentTransactions budget={budget} />
+        <BalanceCard budget={budgetWithTransactions} />
+        <QuickStats budget={budgetWithTransactions} />
+        <RecentTransactions budget={budgetWithTransactions} />
       </div>
       <AddTransactionSheet budgetId={budget.id} />
     </PageTransition>

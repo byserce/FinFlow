@@ -3,8 +3,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
 import { Wallet } from 'lucide-react';
 import type { Budget } from '@/lib/types';
+import { useMemo } from 'react';
 
 export function BalanceCard({ budget }: { budget: Budget }) {
+  const balance = useMemo(() => {
+    return budget.transactions.reduce((acc, tx) => {
+      if (tx.type === 'income') {
+        return acc + tx.amount;
+      }
+      return acc - tx.amount;
+    }, 0);
+  }, [budget.transactions]);
+
 
   return (
     <Card className="rounded-2xl shadow-lg bg-gradient-to-br from-primary/80 to-accent/80 text-primary-foreground overflow-hidden">
@@ -14,7 +24,7 @@ export function BalanceCard({ budget }: { budget: Budget }) {
             <Wallet className="w-4 h-4 mr-2" /> Toplam Bakiye
           </p>
           <p className="text-4xl font-bold tracking-tighter mt-2">
-            {formatCurrency(budget.balance)}
+            {formatCurrency(balance)}
           </p>
         </div>
       </CardContent>

@@ -1,6 +1,5 @@
 import { AppContext } from '@/context/app-provider';
 import { useContext } from 'react';
-import type { Budget } from '../types';
 
 export const useAppContext = () => {
   const context = useContext(AppContext);
@@ -16,10 +15,7 @@ export const useBudget = (budgetId: string) => {
         throw new Error('useBudget must be used within an AppProvider');
     }
     const budget = context.getBudgetById(budgetId);
+    const transactions = context.getTransactionsByBudgetId(budgetId);
     
-    const addTransaction = (transaction: Omit<import('../types').Transaction, 'id'>) => {
-        context.addTransaction(budgetId, transaction);
-    }
-
-    return { budget, addTransaction };
+    return { budget, transactions };
 }
