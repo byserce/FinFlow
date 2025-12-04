@@ -30,25 +30,55 @@ export default async function RootLayout({
   let transactionsByPlan: { [key: string]: any[] } = {};
 
   if (user) {
+    // 1. Fetch user profile
     const { data: userProfile } = await supabase
       .from('budget_profiles')
       .select('*')
       .eq('id', user.id)
       .single();
+
     profile = userProfile;
 
-    const { data: budgetPlans } = await supabase.from('budget_plans').select('*');
-    plans = budgetPlans || [];
-
-    if (plans.length > 0) {
-      for (const plan of plans) {
-        const { data: planTransactions } = await supabase
-          .from('budget_transactions')
-          .select('*')
-          .eq('plan_id', plan.id)
-          .order('date', { ascending: false });
-        transactionsByPlan[plan.id] = planTransactions || [];
+    // 2. If profile doesn't exist, create it.
+    // This handles the case where a user is in auth.users but not in budget_profiles.
+    if (!profile) {
+      const { data: newProfile, error: createError } = await supabase
+        .from('budget_profiles')
+        .insert([
+          {
+            id: user.id,
+            email: user.email,
+            display_name: user.email?.split('@')[0] ?? 'New User',
+            photo_url: user.user_metadata.picture,
+          },
+        ])
+        .select()
+        .single();
+      
+      if (createError) {
+        console.error("Error creating missing profile:", createError);
+        // Handle error if necessary, maybe sign the user out.
+      } else {
+        profile = newProfile;
       }
+    }
+
+
+    // 3. Fetch budget data only if we have a valid profile
+    if (profile) {
+        const { data: budgetPlans } = await supabase.from('budget_plans').select('*');
+        plans = budgetPlans || [];
+
+        if (plans.length > 0) {
+        for (const plan of plans) {
+            const { data: planTransactions } = await supabase
+            .from('budget_transactions')
+            .select('*')
+            .eq('plan_id', plan.id)
+            .order('date', { ascending: false });
+            transactionsByPlan[plan.id] = planTransactions || [];
+        }
+        }
     }
   }
 

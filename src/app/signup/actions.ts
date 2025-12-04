@@ -42,7 +42,7 @@ export async function signup(formData: FormData) {
   if (profileError) {
       console.error('Error creating profile:', profileError);
       // Even if profile creation fails, the user is signed up in Auth.
-      // Redirect to login with a message that indicates a potential issue.
+      // The RootLayout will handle creating the profile on their first login.
       return redirect(`/login?message=Signup successful, but profile creation failed. Please log in.`);
   }
 
