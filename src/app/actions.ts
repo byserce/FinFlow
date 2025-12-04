@@ -42,20 +42,35 @@ export async function createBudget(formData: FormData) {
     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        return redirect('/login');
+        console.error('Create budget failed: User not found.');
+        return redirect('/login?message=Oturum bulunamadı. Lütfen tekrar giriş yapın.');
     }
 
     const name = formData.get('name') as string;
+    if (!name) {
+        return redirect('/?error=Bütçe adı boş olamaz.');
+    }
 
-    const { data, error } = await supabase.from('budget_plans').insert([{ name: name, owner_id: user.id }]).select().single();
+    // Insert the new plan and get the result back
+    const { data, error } = await supabase
+        .from('budget_plans')
+        .insert([{ name: name, owner_id: user.id }])
+        .select()
+        .single();
 
     if (error) {
         console.error('Error creating budget:', error);
         return redirect(`/?error=${error.message}`);
     }
 
+    // Revalidate the root path to show the new budget on the list
     revalidatePath('/');
-    if (data) {
+
+    // If we have data and an id, redirect to the new budget's page
+    if (data && data.id) {
       redirect(`/budget/${data.id}`);
+    } else {
+      // Fallback in case something goes wrong but no error was thrown
+      redirect('/');
     }
 }
