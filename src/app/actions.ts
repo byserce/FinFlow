@@ -29,29 +29,28 @@ export async function addTransaction(plan_id: string, formData: FormData) {
 
   if (error) {
     console.error('Error inserting transaction:', error);
-    // Redirect back with an error message
-    return redirect(`/budget/${plan_id}?error=${error.message}`);
+    // You might want to return an error object instead of redirecting
+    return { error: error.message };
   }
 
   revalidatePath(`/budget/${plan_id}`);
   revalidatePath('/'); // Also revalidate the main page to update total balance if shown there
 }
 
-export async function createBudget(formData: FormData) {
+export async function createBudget(formData: FormData): Promise<{ id?: string; error?: string }> {
     const supabase = createClient();
     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         console.error('Create budget failed: User not found.');
-        return redirect('/login?message=Oturum bulunamadı. Lütfen tekrar giriş yapın.');
+        return { error: 'Oturum bulunamadı. Lütfen tekrar giriş yapın.' };
     }
 
     const name = formData.get('name') as string;
     if (!name) {
-        return redirect('/?error=Bütçe adı boş olamaz.');
+        return { error: 'Bütçe adı boş olamaz.' };
     }
 
-    // Insert the new plan and get the result back
     const { data, error } = await supabase
         .from('budget_plans')
         .insert([{ name: name, owner_id: user.id }])
@@ -60,17 +59,14 @@ export async function createBudget(formData: FormData) {
 
     if (error) {
         console.error('Error creating budget:', error);
-        return redirect(`/?error=${error.message}`);
+        return { error: error.message };
     }
 
-    // Revalidate the root path to show the new budget on the list
     revalidatePath('/');
 
-    // If we have data and an id, redirect to the new budget's page
     if (data && data.id) {
-      redirect(`/budget/${data.id}`);
-    } else {
-      // Fallback in case something goes wrong but no error was thrown
-      redirect('/');
+      return { id: data.id };
     }
+    
+    return { error: 'Bütçe oluşturulamadı.' };
 }

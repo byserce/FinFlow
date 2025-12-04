@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { PageTransition } from '@/components/page-transition';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,11 +19,34 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { createBudget } from './actions';
+import { useToast } from '@/hooks/use-toast';
 
 export default function BudgetsPage() {
   const { budgets, user } = useAppContext();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
 
+  const handleCreateBudget = async (formData: FormData) => {
+    const result = await createBudget(formData);
+
+    if (result?.error) {
+      toast({
+        variant: 'destructive',
+        title: 'Hata',
+        description: result.error,
+      });
+    } else if (result?.id) {
+      toast({
+        title: 'Başarılı!',
+        description: 'Yeni bütçeniz oluşturuldu.',
+      });
+      setIsDialogOpen(false);
+      router.push(`/budget/${result.id}`);
+      router.refresh(); // Sayfanın yenilenmesini tetikleyerek yeni bütçenin listede görünmesini sağlar
+    }
+  };
+  
   if (!user) {
     return (
          <PageTransition>
@@ -56,10 +80,7 @@ export default function BudgetsPage() {
               </Button>
             </DialogTrigger>
             <DialogContent>
-                <form action={async (formData) => {
-                    await createBudget(formData);
-                    setIsDialogOpen(false);
-                }}>
+                <form action={handleCreateBudget}>
                     <DialogHeader>
                         <DialogTitle>Yeni Bütçe Oluştur</DialogTitle>
                     </DialogHeader>
