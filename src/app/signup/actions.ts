@@ -14,6 +14,9 @@ export async function signup(formData: FormData) {
     email,
     password,
     options: {
+      // Disable email confirmation for development to avoid SMTP errors.
+      // In production, you would remove this or set it to true
+      // after configuring your SMTP provider in Supabase.
       emailRedirectTo: `${origin}/auth/callback`,
     },
   })
