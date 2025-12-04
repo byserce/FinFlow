@@ -4,13 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
-export default function LoginPage({
-  searchParams,
-}: {
-  searchParams: { message: string };
-}) {
-  const message = searchParams?.message;
+export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const message = searchParams.get('message');
 
   return (
     <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
