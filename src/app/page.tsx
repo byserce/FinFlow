@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatCurrency } from '@/lib/utils';
-import { Plus, Users, User, ArrowRight, LogOut } from 'lucide-react';
+import { Plus, Users, User, ArrowRight, LogOut, Trash2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -16,8 +16,19 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { useToast } from '@/hooks/use-toast';
-import { createBudget } from './actions';
+import { createBudget, deleteBudget } from './actions';
 import { useUser } from '@/hooks/use-user';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
@@ -41,7 +52,7 @@ export default function BudgetsPage() {
     return <div className="flex items-center justify-center h-screen">Yükleniyor...</div>;
   }
 
-  const handleFormAction = async (formData: FormData) => {
+  const handleCreateBudgetAction = async (formData: FormData) => {
     if (user) {
         formData.append('owner_id', user.id);
     }
@@ -62,6 +73,23 @@ export default function BudgetsPage() {
         setIsDialogOpen(false);
     }
   };
+
+  const handleDeleteBudgetAction = async (budgetId: string) => {
+    const result = await deleteBudget(budgetId);
+     if (result?.error) {
+         toast({
+            variant: 'destructive',
+            title: 'Hata',
+            description: result.error,
+        });
+    } else {
+        toast({
+            title: 'Başarılı',
+            description: 'Bütçe silindi.',
+        });
+    }
+  }
+
 
   const handleLogout = () => {
     logout();
@@ -92,7 +120,7 @@ export default function BudgetsPage() {
                 </Button>
                 </DialogTrigger>
                 <DialogContent>
-                    <form action={handleFormAction}>
+                    <form action={handleCreateBudgetAction}>
                         <DialogHeader>
                             <DialogTitle>Yeni Bütçe Oluştur</DialogTitle>
                         </DialogHeader>
@@ -126,21 +154,46 @@ export default function BudgetsPage() {
              </div>
           ) : budgets.length > 0 ? (
             budgets.map((budget) => (
-              <Link href={`/budget/${budget.id}`} key={budget.id} passHref>
-                <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                  <CardHeader>
+              <Card key={budget.id} className="rounded-2xl shadow-sm hover:shadow-md transition-shadow group">
+                <CardHeader>
                     <CardTitle className="flex justify-between items-center">
-                      <span className="flex items-center">
+                    <Link href={`/budget/${budget.id}`} className="flex items-center flex-grow">
                         {budget.members && budget.members.length > 1 ? (
-                          <Users className="mr-2 text-primary" />
+                        <Users className="mr-2 text-primary" />
                         ) : (
-                          <User className="mr-2 text-primary" />
+                        <User className="mr-2 text-primary" />
                         )}
                         {budget.name}
-                      </span>
-                      <ArrowRight className="text-muted-foreground" />
+                    </Link>
+                    <div className='flex items-center'>
+                         <Link href={`/budget/${budget.id}`} className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <ArrowRight className="text-muted-foreground" />
+                        </Link>
+                         <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity ml-2">
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Emin misiniz?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Bu eylem geri alınamaz. Bu, &quot;{budget.name}&quot; bütçesini ve içindeki tüm işlemleri kalıcı olarak silecektir.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>İptal</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteBudgetAction(budget.id)}>
+                                    Sil
+                                </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
                     </CardTitle>
                   </CardHeader>
+                <Link href={`/budget/${budget.id}`} className="block">
                   <CardContent>
                     <div className="text-2xl font-bold">
                       {formatCurrency(budget.balance)}
@@ -149,8 +202,8 @@ export default function BudgetsPage() {
                       {budget.transactions.length} işlem
                     </p>
                   </CardContent>
-                </Card>
-              </Link>
+                </Link>
+              </Card>
             ))
           ) : (
             <div className="text-center py-10">

@@ -48,6 +48,27 @@ export async function createBudget(formData: FormData) {
   redirect(`/budget/${budgetData.id}`);
 }
 
+export async function deleteBudget(budgetId: string) {
+    const supabase = createClient();
+    
+    // The database is set up with cascading deletes, so deleting a budget_plan
+    // will also delete associated budget_members and budget_transactions.
+    const { error } = await supabase
+        .from('budget_plans')
+        .delete()
+        .eq('id', budgetId);
+
+    if (error) {
+        console.error('Error deleting budget:', error);
+        return {
+            error: 'Bütçe silinemedi. Lütfen tekrar deneyin.'
+        }
+    }
+
+    revalidatePath('/');
+}
+
+
 export async function addTransaction(formData: FormData) {
     const supabase = createClient();
     const budgetId = formData.get('budgetId') as string;
