@@ -56,7 +56,10 @@ export default function BudgetsPage() {
               </Button>
             </DialogTrigger>
             <DialogContent>
-                <form action={createBudget} onSubmit={() => setIsDialogOpen(false)}>
+                <form action={async (formData) => {
+                    await createBudget(formData);
+                    setIsDialogOpen(false);
+                }}>
                     <DialogHeader>
                         <DialogTitle>Yeni Bütçe Oluştur</DialogTitle>
                     </DialogHeader>
