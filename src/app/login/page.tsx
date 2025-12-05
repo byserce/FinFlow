@@ -36,7 +36,14 @@ export default function LoginPage() {
     }
     try {
       const decoded = jwtDecode<GoogleJwtPayload>(credentialResponse.credential);
-      const userProfile = await handleGoogleLogin(decoded.email, decoded.name, decoded.picture);
+      const result = await handleGoogleLogin(decoded.email, decoded.name, decoded.picture);
+
+      if (result.error) {
+        toast({ variant: 'destructive', title: t('error'), description: result.error });
+        return;
+      }
+      
+      const userProfile = result.user;
       
       login(userProfile);
 

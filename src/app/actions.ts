@@ -6,12 +6,23 @@ import { revalidatePath } from 'next/cache';
 import type { Profile } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
 
+const ALLOWED_EMAILS = [
+  "atakan.serce1@gmail.com",
+  "atakan.serce4@gmail.com",
+  "ceylin.ads1@gmail.com"
+];
+
 function generateJoinCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
 
-export async function handleGoogleLogin(email: string, name: string, picture: string): Promise<Profile> {
+export async function handleGoogleLogin(email: string, name: string, picture: string) {
+  if (!ALLOWED_EMAILS.includes(email)) {
+    console.error("Yetkisiz giriş denemesi:", email);
+    return { error: "Bu uygulamaya sadece davetli üyeler giriş yapabilir." };
+  }
+
   const supabase = createClient();
   
   // 1. Check if a profile with this email already exists.
@@ -23,7 +34,7 @@ export async function handleGoogleLogin(email: string, name: string, picture: st
 
   // If a user is found, return it.
   if (existingProfile) {
-    return existingProfile;
+    return { user: existingProfile };
   }
 
   // If no user is found (and it's the specific 'no rows' error), create one.
@@ -43,24 +54,24 @@ export async function handleGoogleLogin(email: string, name: string, picture: st
 
     if (insertError) {
       console.error('Error creating new user profile:', insertError);
-      throw new Error('Could not create a new user profile.');
+      return { error: 'Could not create a new user profile.' };
     }
     
     if (!newProfile) {
-        throw new Error('Failed to create and retrieve new user profile.');
+        return { error: 'Failed to create and retrieve new user profile.' };
     }
 
-    return newProfile;
+    return { user: newProfile };
   }
   
   // Handle other unexpected database errors during fetch
   if (fetchError) {
       console.error('Error fetching profile:', fetchError);
-      throw new Error('Could not process login due to a database error.');
+      return { error: 'Could not process login due to a database error.' };
   }
 
   // This part should not be reached if logic is correct, but as a fallback.
-  throw new Error('An unexpected error occurred during the login process.');
+  return { error: 'An unexpected error occurred during the login process.' };
 }
 
 export async function createBudget(formData: FormData) {
@@ -415,3 +426,4 @@ export async function updateBudgetCurrency(budgetId: string, currency: string, u
     
 
     
+
