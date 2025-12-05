@@ -58,19 +58,21 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
     <PageTransition>
       <div className="flex flex-col gap-8 p-4 md:p-6">
         <header className="flex items-start justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground flex items-center">
-              <User className="w-4 h-4 mr-2" />
-              {budget.name}
-            </p>
-            <h1 className="text-2xl font-bold text-foreground">Genel Bakış</h1>
-          </div>
-          <div className="flex items-center gap-2">
-             <Link href="/" passHref>
+          <div className="flex items-center gap-4">
+            <Link href="/" passHref>
               <Button variant="outline" size="icon" aria-label="Tüm Bütçeler">
                 <Wallet className="h-5 w-5" />
               </Button>
             </Link>
+            <div>
+              <p className="text-sm text-muted-foreground flex items-center">
+                <User className="w-4 h-4 mr-2" />
+                {budget.name}
+              </p>
+              <h1 className="text-2xl font-bold text-foreground">Genel Bakış</h1>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
             <Avatar>
               <AvatarImage src={user?.photo_url ?? undefined} data-ai-hint="person portrait" />
               <AvatarFallback>{user?.display_name?.charAt(0) ?? 'U'}</AvatarFallback>
