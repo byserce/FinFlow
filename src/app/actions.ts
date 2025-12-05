@@ -19,7 +19,7 @@ export async function handleGoogleLogin(email: string, name: string, picture: st
     .eq('email', email)
     .single();
 
-  if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116: 'exact-one' violation (i.e. no rows found)
+  if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116: 'exact-one' violation (no rows found)
     console.error('Error fetching profile:', fetchError);
     throw new Error('Could not process login.');
   }
@@ -28,12 +28,12 @@ export async function handleGoogleLogin(email: string, name: string, picture: st
     return existingProfile;
   }
 
-  // Create new profile
-  const newProfileId = uuidv4();
+  // Create new profile. The ID will be automatically populated by the database trigger
+  // that is linked to the auth.users table.
   const { data: newProfile, error: insertError } = await supabase
     .from('budget_profiles')
     .insert({
-      id: newProfileId,
+      // id is now omitted; it will be set by the trigger
       email: email,
       display_name: name,
       photo_url: picture,
@@ -398,3 +398,5 @@ export async function updateBudgetCurrency(budgetId: string, currency: string, u
     
     return { success: true };
 }
+
+    
