@@ -1,7 +1,6 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
-import { jwtDecode } from 'jwt-decode';
 import { handleGoogleLogin } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/use-translation';
@@ -53,6 +52,8 @@ function LoginScreen() {
         login(result.user);
         toast({ title: t('success'), description: t('loginSuccess') });
         router.push('/');
+        // Force a reload to ensure AppProvider picks up the new user state
+        router.refresh();
       }
     } catch (error) {
       console.error('Login processing error:', error);

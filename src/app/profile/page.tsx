@@ -69,6 +69,7 @@ export default function ProfilePage() {
       });
       await refetch();
       router.push('/');
+      router.refresh();
     }
 
     setIsSubmitting(false);
