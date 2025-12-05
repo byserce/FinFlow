@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { FcGoogle } from 'react-icons/fc';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const handleLogin = async () => {
     setError(null);
@@ -23,7 +25,7 @@ export default function LoginPage() {
       if (error.message.includes('Unsupported provider')) {
         setError("Google ile kimlik doğrulama bu projede etkinleştirilmemiş. Lütfen Supabase projenizin 'Authentication > Providers' bölümüne gidip Google'ı etkinleştirin.");
       } else {
-        setError(`Bir hata oluştu: ${error.message}`);
+        setError(`${t('error')}: ${error.message}`);
       }
     }
   };
@@ -31,8 +33,8 @@ export default function LoginPage() {
   return (
     <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-4 items-center">
       <div className="text-center mb-4">
-        <h1 className="text-3xl font-bold">FinFlow'a Hoş Geldiniz</h1>
-        <p className="text-muted-foreground">Başlamak için giriş yapın veya kaydolun.</p>
+        <h1 className="text-3xl font-bold">{t('welcome')}</h1>
+        <p className="text-muted-foreground">{t('manageBudgets')}</p>
       </div>
 
       {error && (
