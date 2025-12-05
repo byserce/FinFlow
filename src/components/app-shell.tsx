@@ -18,18 +18,19 @@ function BottomNav() {
   const budgetId = budgetIdMatch ? budgetIdMatch[1] : null;
 
   const navItems = [
-    { href: '/', label: 'Bütçeler', icon: Wallet, exact: true },
+    // { href: '/', label: 'Bütçeler', icon: Wallet, exact: true }, // Removed from here
     { href: `/budget/${budgetId}`, label: 'Genel Bakış', icon: Home, exact: true },
     { href: `/budget/${budgetId}/analytics`, label: 'Analiz', icon: BarChart2 },
     { href: `/budget/${budgetId}/history`, label: 'Geçmiş', icon: History },
     { href: `/budget/${budgetId}/settings`, label: 'Ayarlar', icon: Settings },
   ];
 
-  // If we are not in a specific budget, only show the Budgets link
-  const itemsToShow = budgetId ? navItems : [navItems[0]];
+  // If we are not in a specific budget, do not show the nav bar.
+  // The main budget page '/' does not need a bottom nav.
+  const itemsToShow = budgetId ? navItems : [];
   
-  if (!user) {
-    return null; // Don't show nav if user is not logged in
+  if (!user || itemsToShow.length === 0) {
+    return null; // Don't show nav if user is not logged in or no items to show
   }
 
 
@@ -39,12 +40,7 @@ function BottomNav() {
         {itemsToShow.map((item) => {
           if (!item.href) return null;
           // Updated isActive logic for more precise matching
-          const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href) && !item.exact;
-           const isSettingsActive = item.label === 'Ayarlar' && pathname.includes('settings');
-          const finalIsActive = isSettingsActive || (item.exact ? pathname === item.href : pathname.startsWith(item.href) && item.href !== '/' && !pathname.includes('settings'));
-          const budgetHomeActive = item.href === `/budget/${budgetId}` && pathname === `/budget/${budgetId}`;
-
-           let realIsActive = item.exact ? pathname === item.href : pathname.startsWith(item.href) && item.href !== '/';
+          let realIsActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             if (item.href === `/budget/${budgetId}` && pathname !== `/budget/${budgetId}`) {
                 realIsActive = false;
             }

@@ -5,7 +5,7 @@ import { QuickStats } from '@/components/dashboard/quick-stats';
 import { RecentTransactions } from '@/components/dashboard/recent-transactions';
 import { AddTransactionSheet } from '@/components/add-transaction-sheet';
 import { PageTransition } from '@/components/page-transition';
-import { User, ArrowLeft } from 'lucide-react';
+import { User, ArrowLeft, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/hooks/use-user';
@@ -57,7 +57,7 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
   return (
     <PageTransition>
       <div className="flex flex-col gap-8 p-4 md:p-6">
-        <header className="flex items-center justify-between">
+        <header className="flex items-start justify-between">
           <div>
             <p className="text-sm text-muted-foreground flex items-center">
               <User className="w-4 h-4 mr-2" />
@@ -65,10 +65,17 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
             </p>
             <h1 className="text-2xl font-bold text-foreground">Genel Bakış</h1>
           </div>
-          <Avatar>
-            <AvatarImage src={user?.photo_url ?? undefined} data-ai-hint="person portrait" />
-            <AvatarFallback>{user?.display_name?.charAt(0) ?? 'U'}</AvatarFallback>
-          </Avatar>
+          <div className="flex items-center gap-2">
+             <Link href="/" passHref>
+              <Button variant="outline" size="icon" aria-label="Tüm Bütçeler">
+                <Wallet className="h-5 w-5" />
+              </Button>
+            </Link>
+            <Avatar>
+              <AvatarImage src={user?.photo_url ?? undefined} data-ai-hint="person portrait" />
+              <AvatarFallback>{user?.display_name?.charAt(0) ?? 'U'}</AvatarFallback>
+            </Avatar>
+          </div>
         </header>
 
         <BalanceCard budget={budget} />
