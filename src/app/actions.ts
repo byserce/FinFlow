@@ -10,7 +10,8 @@ const ALLOWED_EMAILS = [
   "atakan.serce1@gmail.com",
   "atakan.serce4@gmail.com",
   "ceylin.ads1@gmail.com",
-  "cey1725@gmail.com"
+  "cey1725@gmail.com",
+  "sumeyraserce@gmail.com"
 ];
 
 function generateJoinCode() {
