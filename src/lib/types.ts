@@ -1,7 +1,10 @@
 import type { LucideIcon } from "lucide-react";
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient, User as SupabaseUser } from '@supabase/supabase-js';
 export type { Database } from './types/supabase';
 import { Database } from './types/supabase';
+
+// Add SupabaseUser to be used in context
+export type { SupabaseUser };
 
 // Manual Profile type based on new schema
 export type Profile = Database['public']['Tables']['budget_profiles']['Row'];

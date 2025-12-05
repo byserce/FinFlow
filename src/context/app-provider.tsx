@@ -1,14 +1,13 @@
 'use client';
 import { createContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useUser } from '@/hooks/use-user';
-import type { AppContextType, Budget, Transaction, Plan, Member, Profile, TransactionParticipant } from '@/lib/types';
+import type { AppContextType, Budget, Transaction, Plan, Member, Profile, TransactionParticipant, SupabaseUser } from '@/lib/types';
 import { Database } from '@/lib/types';
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { user, isLoading: isUserLoading } = useUser();
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [transactionsByPlan, setTransactionsByPlan] = useState<{ [key: string]: Transaction[] }>({});
   const [membersByPlan, setMembersByPlan] = useState<{ [key: string]: Member[] }>({});
@@ -17,6 +16,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const supabase = createClient();
 
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase]);
+
   const fetchData = useCallback(async () => {
     setIsLoading(true);
 
@@ -24,7 +31,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (profilesError) console.error("Error fetching profiles:", profilesError);
     setAllProfiles(profilesData || []);
 
-    if (isUserLoading || !user?.id) {
+    if (!user?.id) {
       setPlans([]);
       setTransactionsByPlan({});
       setMembersByPlan({});
@@ -87,7 +94,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     setIsLoading(false);
-  }, [user?.id, supabase, isUserLoading]);
+  }, [user?.id, supabase]);
 
   useEffect(() => {
     fetchData();

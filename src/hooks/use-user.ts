@@ -1,56 +1,65 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
-import type { Profile } from '@/lib/types';
-
-const USER_STORAGE_KEY = 'active_user';
+import { useState, useEffect, useCallback, useContext } from 'react';
+import { AppContext } from '@/context/app-provider';
+import type { Profile, SupabaseUser } from '@/lib/types';
 
 export function useUser() {
-    const [user, setUser] = useState<Profile | null>(null);
+    const context = useContext(AppContext);
+    if (!context) {
+        throw new Error('useUser must be used within an AppProvider');
+    }
+
+    const { supabase, allProfiles } = context;
+    const [user, setUser] = useState<SupabaseUser | null>(null);
+    const [profile, setProfile] = useState<Profile | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const loadUser = useCallback(async () => {
-        try {
-            const userJson = localStorage.getItem(USER_STORAGE_KEY);
-            if (userJson) {
-                setUser(JSON.parse(userJson));
-            } else {
-                setUser(null);
+    useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            (event, session) => {
+                const currentUser = session?.user ?? null;
+                setUser(currentUser);
+                
+                if (currentUser) {
+                    const userProfile = allProfiles.find(p => p.id === currentUser.id) || null;
+                    setProfile(userProfile);
+                } else {
+                    setProfile(null);
+                }
+                
+                setIsLoading(false);
             }
-        } catch (error) {
-            console.error("Failed to parse user from localStorage", error);
-            setUser(null);
-        } finally {
+        );
+
+        // Initial check
+        const checkUser = async () => {
+            const { data } = await supabase.auth.getUser();
+            const currentUser = data.user;
+            setUser(currentUser);
+            if (currentUser) {
+                 const userProfile = allProfiles.find(p => p.id === currentUser.id) || null;
+                 setProfile(userProfile);
+            }
             setIsLoading(false);
         }
-    }, []);
 
-    useEffect(() => {
-        loadUser();
-        
-        const handleStorageChange = (event: StorageEvent) => {
-            if (event.key === USER_STORAGE_KEY) {
-                loadUser();
-            }
-        };
-
-        window.addEventListener('storage', handleStorageChange);
-        // Also listen for a custom event
-        const handleProfileUpdate = () => loadUser();
-        window.addEventListener('profile-updated', handleProfileUpdate);
-
+        checkUser();
 
         return () => {
-            window.removeEventListener('storage', handleStorageChange);
-            window.removeEventListener('profile-updated', handleProfileUpdate);
+            subscription.unsubscribe();
         };
-    }, [loadUser]);
+    }, [supabase, allProfiles]);
 
-    const logout = useCallback(() => {
-        localStorage.removeItem(USER_STORAGE_KEY);
+    const logout = async () => {
+        await supabase.auth.signOut();
         setUser(null);
-        // We can't use router here, so logout is only responsible for clearing the state.
-        // The component calling logout should handle the redirection.
-    }, []);
+        setProfile(null);
+    };
 
-    return { user, logout, isLoading, loadUser };
+    return { 
+      user: profile, // Return the budget_profiles record as 'user' for app compatibility
+      supabaseUser: user, // Return the actual auth user if needed
+      logout, 
+      isLoading: isLoading || context.isLoading
+    };
 }

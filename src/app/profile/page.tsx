@@ -8,7 +8,7 @@ import { updateUserProfile } from '@/app/actions';
 import { PageTransition } from '@/components/page-transition';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -19,7 +19,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function ProfilePage() {
-  const { user, isLoading, loadUser } = useUser();
+  const { user, isLoading, refetch } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const { t, language, setLanguage } = useTranslation();
@@ -49,7 +49,6 @@ export default function ProfilePage() {
     setIsSubmitting(true);
 
     const formData = new FormData();
-    formData.append('userId', user.id);
     formData.append('displayName', displayName);
     formData.append('photoURL', selectedAvatar);
     formData.append('default_currency', defaultCurrency);
@@ -63,16 +62,11 @@ export default function ProfilePage() {
         description: result.error,
       });
     } else {
-        // Update local storage to reflect changes immediately
-      const updatedUser = { ...user, display_name: displayName, photo_url: selectedAvatar, default_currency: defaultCurrency };
-      localStorage.setItem('active_user', JSON.stringify(updatedUser));
-      // Manually trigger a re-fetch in the useUser hook
-      await loadUser();
-
       toast({
         title: t('success'),
         description: t('updateSuccess'),
       });
+      await refetch();
       router.push('/');
     }
 
@@ -136,7 +130,7 @@ export default function ProfilePage() {
                 </div>
                  <div className="space-y-2">
                   <Label>{t('defaultCurrency')}</Label>
-                  <Select value={defaultCurrency} onValueChange={setDefaultCurrency}>
+                  <Select value={defaultCurrency} onValueChange={setDefaultCurrency} name="default_currency">
                       <SelectTrigger>
                           <SelectValue placeholder={t('selectCurrency')} />
                       </SelectTrigger>

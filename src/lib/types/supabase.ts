@@ -82,7 +82,6 @@ export type Database = {
           display_name: string | null
           email: string | null
           photo_url: string | null
-          password?: string | null
           default_currency: string | null
         }
         Insert: {
@@ -90,7 +89,6 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           photo_url?: string | null
-          password?: string | null
           default_currency?: string | null
         }
         Update: {
@@ -98,7 +96,6 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           photo_url?: string | null
-          password?: string | null
           default_currency?: string | null
         }
       },

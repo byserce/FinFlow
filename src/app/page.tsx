@@ -62,10 +62,6 @@ export default function BudgetsPage() {
   const getProfile = (userId: string) => allProfiles.find(p => p.id === userId);
 
   const handleCreateBudgetAction = async (formData: FormData) => {
-    if (user) {
-        formData.append('owner_id', user.id);
-    }
-    
     const result = await createBudget(formData);
     
     if (result?.error) {
@@ -85,10 +81,6 @@ export default function BudgetsPage() {
   };
   
   const handleJoinBudgetAction = async (formData: FormData) => {
-    if (user) {
-        formData.append('user_id', user.id);
-    }
-    
     const result = await joinBudgetByCode(formData);
 
     if (result?.error) {
@@ -126,9 +118,10 @@ export default function BudgetsPage() {
   }
 
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.push('/login');
+    router.refresh();
   }
 
   return (
