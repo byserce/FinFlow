@@ -44,6 +44,7 @@ export type CategoryInfo = {
 export type AppContextType = {
   budgets: Budget[];
   transactionsByPlan: { [key: string]: Transaction[] };
+  allProfiles: Profile[];
   supabase: SupabaseClient<Database>;
   isLoading: boolean;
   refetch: () => Promise<void>;

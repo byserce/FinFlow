@@ -2,7 +2,7 @@
 import { createContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/hooks/use-user';
-import type { AppContextType, Budget, Transaction, Plan, Member } from '@/lib/types';
+import type { AppContextType, Budget, Transaction, Plan, Member, Profile } from '@/lib/types';
 import { Database } from '@/lib/types';
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -12,12 +12,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [transactionsByPlan, setTransactionsByPlan] = useState<{ [key: string]: Transaction[] }>({});
   const [membersByPlan, setMembersByPlan] = useState<{ [key: string]: Member[] }>({});
+  const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const supabase = createClient();
 
   const fetchData = useCallback(async () => {
+    setIsLoading(true);
+
+    // Fetch all user profiles first
+    const { data: profilesData, error: profilesError } = await supabase
+      .from('budget_profiles')
+      .select('*');
+    
+    if (profilesError) {
+      console.error("Error fetching profiles:", profilesError);
+      setAllProfiles([]);
+    } else {
+      setAllProfiles(profilesData || []);
+    }
+
     if (isUserLoading) {
-        return;
+      setIsLoading(false);
+      return;
     }
     if (!user?.id) {
       setPlans([]);
@@ -27,8 +43,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return;
     }
     
-    setIsLoading(true);
-
     const { data: memberEntries, error: memberError } = await supabase
       .from('budget_members')
       .select('budget_plans!inner(*)')
@@ -117,10 +131,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value = useMemo(() => ({
     budgets,
     transactionsByPlan,
+    allProfiles,
     supabase,
     isLoading,
     refetch: fetchData,
-  }), [budgets, transactionsByPlan, isLoading, supabase, fetchData]);
+  }), [budgets, transactionsByPlan, allProfiles, isLoading, supabase, fetchData]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

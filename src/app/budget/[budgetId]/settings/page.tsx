@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { updateMemberStatus, updateMemberRole, removeMember } from "@/app/actions";
 import { useAppContext } from "@/lib/hooks/use-app-context";
-
+import type { Profile } from "@/lib/types";
 
 interface SettingsPageProps {
   params: { budgetId: string };
@@ -38,9 +38,13 @@ interface SettingsPageProps {
 export default function SettingsPage({ params }: SettingsPageProps) {
   const { budget, isLoading } = useBudget(params.budgetId);
   const { user } = useUser();
-  const { refetch } = useAppContext();
+  const { refetch, allProfiles } = useAppContext();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
+
+  const getProfile = (userId: string): Profile | undefined => {
+    return allProfiles.find(p => p.id === userId);
+  }
 
   const handleCopyToClipboard = () => {
     if (budget?.join_code) {
@@ -91,7 +95,15 @@ export default function SettingsPage({ params }: SettingsPageProps) {
 
   const isOwner = user?.id === budget.owner_id;
   const pendingRequests = budget.members.filter(m => m.status === 'pending');
-  const acceptedMembers = budget.members.filter(m => m.status === 'accepted' && m.role !== 'owner');
+  
+  // Sort accepted members, owner first
+  const acceptedMembers = budget.members
+    .filter(m => m.status === 'accepted')
+    .sort((a, b) => {
+      if (a.role === 'owner') return -1;
+      if (b.role === 'owner') return 1;
+      return 0;
+    });
 
 
   return (
@@ -129,21 +141,27 @@ export default function SettingsPage({ params }: SettingsPageProps) {
               <CardTitle>Katılım İstekleri</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {pendingRequests.map(member => (
-                <div key={member.user_id} className="flex items-center justify-between">
-                   <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        {/* You would fetch profile data here based on user_id */}
-                        <AvatarFallback>{member.user_id.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm font-medium">Kullanıcı {member.user_id.substring(0, 6)}</span>
+              {pendingRequests.map(member => {
+                const memberProfile = getProfile(member.user_id);
+                return (
+                  <div key={member.user_id} className="flex items-center justify-between">
+                     <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={memberProfile?.photo_url ?? undefined} />
+                          <AvatarFallback>{memberProfile?.display_name?.charAt(0) ?? '?'}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-semibold">{memberProfile?.display_name ?? 'Bilinmeyen Kullanıcı'}</p>
+                          <p className="text-xs text-muted-foreground">{member.user_id}</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => handleStatusUpdate(member.user_id, 'accepted')}>Onayla</Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleStatusUpdate(member.user_id, 'rejected')}>Reddet</Button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={() => handleStatusUpdate(member.user_id, 'accepted')}>Onayla</Button>
-                    <Button size="sm" variant="ghost" onClick={() => handleStatusUpdate(member.user_id, 'rejected')}>Reddet</Button>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </CardContent>
           </Card>
         )}
@@ -155,27 +173,22 @@ export default function SettingsPage({ params }: SettingsPageProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-               {/* Owner */}
-              <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                         <AvatarFallback>{budget.owner_id.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium">Kullanıcı {budget.owner_id.substring(0, 6)}</span>
-                        <span className="text-xs text-muted-foreground">Sahip</span>
-                      </div>
-                  </div>
-              </div>
-              {acceptedMembers.map(member => (
+              {acceptedMembers.map(member => {
+                 const memberProfile = getProfile(member.user_id);
+                 return (
                  <div key={member.user_id} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback>{member.user_id.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm font-medium">Kullanıcı {member.user_id.substring(0, 6)}</span>
+                    <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                            <AvatarImage src={memberProfile?.photo_url ?? undefined} />
+                            <AvatarFallback>{memberProfile?.display_name?.charAt(0) ?? '?'}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <p className="font-semibold">{memberProfile?.display_name ?? 'Bilinmeyen Kullanıcı'}</p>
+                            <p className="text-xs text-muted-foreground">{member.user_id}</p>
+                        </div>
                     </div>
-                    {isOwner ? (
+
+                    {isOwner && member.role !== 'owner' ? (
                        <div className="flex items-center gap-2">
                           <Select 
                             value={member.role}
@@ -212,10 +225,11 @@ export default function SettingsPage({ params }: SettingsPageProps) {
                           </AlertDialog>
                        </div>
                     ) : (
-                      <span className="text-sm text-muted-foreground capitalize">{member.role}</span>
+                      <span className="text-sm font-medium capitalize bg-muted px-2 py-1 rounded-md">{member.role}</span>
                     )}
                  </div>
-              ))}
+                 )
+              })}
             </CardContent>
         </Card>
 
