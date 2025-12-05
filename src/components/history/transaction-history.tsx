@@ -156,7 +156,7 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
                               {canEdit && (
                                 <AlertDialog onOpenChange={(open) => !open && event.stopPropagation()} >
                                   <AlertDialogTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive transition-transform active:scale-90">
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
                                   </AlertDialogTrigger>
