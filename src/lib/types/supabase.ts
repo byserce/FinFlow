@@ -15,18 +15,21 @@ export type Database = {
           name: string
           owner_id: string
           created_at: string
+          join_code: string | null
         }
         Insert: {
           id?: string
           name: string
           owner_id: string
           created_at?: string
+          join_code?: string | null
         }
         Update: {
           id?: string
           name?: string
           owner_id?: string
           created_at?: string
+          join_code?: string | null
         }
       },
       budget_transactions: {
@@ -91,20 +94,23 @@ export type Database = {
         Row: {
             plan_id: string
             user_id: string
-            role: "owner" | "member"
+            role: "owner" | "editor" | "viewer"
             created_at: string
+            status: "pending" | "accepted" | "rejected"
         },
         Insert: {
             plan_id: string
             user_id: string
-            role: "owner" | "member"
+            role?: "owner" | "editor" | "viewer"
             created_at?: string
+            status?: "pending" | "accepted" | "rejected"
         },
         Update: {
             plan_id?: string
             user_id?: string
-            role?: "owner" | "member"
+            role?: "owner" | "editor" | "viewer"
             created_at?: string
+            status?: "pending" | "accepted" | "rejected"
         }
       }
     }

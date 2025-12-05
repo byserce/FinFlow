@@ -2,22 +2,27 @@
 import { createContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/hooks/use-user';
-import type { AppContextType, Budget, Transaction, Plan } from '@/lib/types';
+import type { AppContextType, Budget, Transaction, Plan, Member } from '@/lib/types';
 import { Database } from '@/lib/types';
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { user } = useUser();
+  const { user, isLoading: isUserLoading } = useUser();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [transactionsByPlan, setTransactionsByPlan] = useState<{ [key: string]: Transaction[] }>({});
+  const [membersByPlan, setMembersByPlan] = useState<{ [key: string]: Member[] }>({});
   const [isLoading, setIsLoading] = useState(true);
   const supabase = createClient();
 
   const fetchData = useCallback(async () => {
+    if (isUserLoading) {
+        return;
+    }
     if (!user?.id) {
       setPlans([]);
       setTransactionsByPlan({});
+      setMembersByPlan({});
       setIsLoading(false);
       return;
     }
@@ -27,7 +32,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const { data: memberEntries, error: memberError } = await supabase
       .from('budget_members')
       .select('budget_plans!inner(*)')
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .eq('status', 'accepted');
 
     if (memberError) {
       console.error("Error fetching member budgets:", memberError);
@@ -60,12 +66,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }, {} as { [key: string]: Transaction[] });
         setTransactionsByPlan(groupedTxs);
       }
+      
+      const { data: members, error: membersError } = await supabase
+        .from('budget_members')
+        .select('*')
+        .in('plan_id', planIds);
+
+      if (membersError) {
+        console.error("Error fetching members:", membersError);
+        setMembersByPlan({});
+      } else {
+        const groupedMembers = members.reduce((acc, member) => {
+            if (!acc[member.plan_id]) {
+                acc[member.plan_id] = [];
+            }
+            acc[member.plan_id].push(member);
+            return acc;
+        }, {} as { [key: string]: Member[] });
+        setMembersByPlan(groupedMembers);
+      }
+
     } else {
       setTransactionsByPlan({});
+      setMembersByPlan({});
     }
 
     setIsLoading(false);
-  }, [user?.id, supabase]);
+  }, [user?.id, supabase, isUserLoading]);
 
   useEffect(() => {
     fetchData();
@@ -82,10 +109,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...plan,
         transactions: transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
         balance: balance,
-        members: [], 
+        members: membersByPlan[plan.id] || [], 
       };
     });
-  }, [plans, transactionsByPlan]);
+  }, [plans, transactionsByPlan, membersByPlan]);
 
   const value = useMemo(() => ({
     budgets,

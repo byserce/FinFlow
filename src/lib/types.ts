@@ -9,12 +9,13 @@ export type Profile = Database['public']['Tables']['budget_profiles']['Row'];
 // Types from Supabase schema
 export type Transaction = Database['public']['Tables']['budget_transactions']['Row'];
 export type Plan = Database['public']['Tables']['budget_plans']['Row'];
+export type Member = Database['public']['Tables']['budget_members']['Row'];
 
 
 export type Budget = Plan & {
   transactions: Transaction[];
   balance: number;
-  members: string[]; // Changed from Member[] to string[]
+  members: Member[];
 };
 
 export type Category = 

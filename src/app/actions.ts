@@ -1,8 +1,10 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
+
+function generateJoinCode() {
+  return Math.random().toString(36).substring(2, 11);
+}
 
 export async function createBudget(formData: FormData) {
   const supabase = createClient();
@@ -15,11 +17,13 @@ export async function createBudget(formData: FormData) {
         error: 'Authentication error: User ID is missing.'
     }
   }
+  
+  const joinCode = generateJoinCode();
 
   // 1. Create the new budget plan
   const { data: budgetData, error: budgetError } = await supabase
     .from('budget_plans')
-    .insert([{ name, owner_id: ownerId }])
+    .insert([{ name, owner_id: ownerId, join_code: joinCode }])
     .select()
     .single();
 
@@ -33,7 +37,7 @@ export async function createBudget(formData: FormData) {
   // 2. Add the owner as a member in budget_members
   const { error: memberError } = await supabase
     .from('budget_members')
-    .insert([{ plan_id: budgetData.id, user_id: ownerId, role: 'owner' }]);
+    .insert([{ plan_id: budgetData.id, user_id: ownerId, role: 'owner', status: 'accepted' }]);
 
   if (memberError) {
     console.error('Error adding budget member:', memberError);
@@ -43,10 +47,6 @@ export async function createBudget(formData: FormData) {
         error: 'Could not assign budget ownership. Please try again.'
     }
   }
-  
-  // This redirect will be handled client-side after refetch
-  // revalidatePath('/');
-  // redirect(`/budget/${budgetData.id}`);
 }
 
 export async function deleteBudget(budgetId: string) {
