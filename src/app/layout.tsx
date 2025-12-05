@@ -12,6 +12,8 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 export const metadata: Metadata = {
   title: 'FinFlow',
   description: 'Kişisel finans yol arkadaşınız. | Your personal finance companion.',
+  manifest: '/manifest.json',
+  themeColor: '#FFFFFF',
 };
 
 export default function RootLayout({
@@ -32,5 +34,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    
