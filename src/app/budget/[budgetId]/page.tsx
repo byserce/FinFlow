@@ -81,7 +81,7 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
                  {getIcon()}
                 {budget.name}
               </p>
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+              <h1 className="text-xl xs:text-2xl font-bold text-foreground">
                 {isSharingMode ? t('debtStatus') : t('overview')}
               </h1>
             </div>

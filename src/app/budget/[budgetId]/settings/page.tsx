@@ -124,7 +124,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
     <PageTransition>
       <div className="p-4 md:p-6 space-y-6">
         <header>
-          <h1 className="text-2xl sm:text-3xl font-bold">{t('budgetSettings')}</h1>
+          <h1 className="text-2xl xs:text-3xl font-bold">{t('budgetSettings')}</h1>
           <p className="text-muted-foreground">{budget.name}</p>
         </header>
 

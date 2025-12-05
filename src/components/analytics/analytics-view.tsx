@@ -62,7 +62,7 @@ export function AnalyticsView({ budgetId }: { budgetId: string }) {
   return (
     <div className="p-4 md:p-6 space-y-6">
       <header>
-        <h1 className="text-2xl sm:text-3xl font-bold">{t('analysis')}</h1>
+        <h1 className="text-2xl xs:text-3xl font-bold">{t('analysis')}</h1>
         <p className="text-muted-foreground">{t('yourFinancialPerformance')}</p>
       </header>
 

@@ -68,10 +68,7 @@ function LoginScreen() {
   });
 
   return (
-    // DÜZELTME 1: 'fixed inset-0' ile sayfayı ekrana çiviliyoruz.
-    // 'z-50' ile en üstte durmasını sağlıyoruz.
-    // 'bg-background' ile arka plan rengini garantiye alıyoruz.
-    <div className="fixed inset-0 z-50 flex flex-col bg-background p-6 sm:p-8 overflow-hidden overscroll-none touch-none">
+    <div className="fixed inset-0 z-50 flex h-screen flex-col bg-background p-6 sm:p-8 overflow-hidden overscroll-none touch-none">
         
         {/* Main content area */}
         <div className="flex-1 flex flex-col items-center justify-center text-center w-full max-w-md mx-auto">
@@ -80,8 +77,7 @@ function LoginScreen() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
             >
-                {/* DÜZELTME 2: Logo boyutunu küçülttük (w-24), büyük ekranda büyüsün (sm:w-32) */}
-                <div className="relative w-24 h-24 sm:w-32 sm:h-32 mb-4 sm:mb-6 mx-auto">
+                <div className="relative w-24 h-24 xs:w-32 xs:h-32 mb-4 sm:mb-6 mx-auto">
                    <Image 
                      src="/logo.png" 
                      alt="FinFlow Logo" 
@@ -97,11 +93,10 @@ function LoginScreen() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
             >
-                {/* DÜZELTME 3: Yazı boyutlarını responsive yaptık */}
-                <h1 className="text-2xl sm:text-4xl font-bold tracking-tighter">
+                <h1 className="text-2xl xs:text-3xl sm:text-4xl font-bold tracking-tighter">
                   {t('welcome')}
                 </h1>
-                <p className="text-muted-foreground mt-2 text-sm sm:text-lg px-4">
+                <p className="text-muted-foreground mt-2 text-sm xs:text-base sm:text-lg px-4">
                   {t('manageBudgets')}
                 </p>
             </motion.div>
@@ -116,8 +111,7 @@ function LoginScreen() {
         >
             <Button
                 size="lg"
-                // DÜZELTME 4: Buton yüksekliğini mobilde biraz kıstık (h-12 -> sm:h-14)
-                className="w-full h-12 sm:h-14 text-base sm:text-lg rounded-2xl bg-white text-gray-800 hover:bg-gray-100 shadow-md transition-transform active:scale-95"
+                className="w-full h-12 xs:h-14 text-base sm:text-lg rounded-2xl bg-white text-gray-800 hover:bg-gray-100 shadow-md transition-transform active:scale-95"
                 onClick={() => googleLogin()}
             >
                 <FcGoogle className="mr-3 h-6 w-6 sm:h-7 sm:w-7" />
@@ -133,7 +127,6 @@ export default function LoginPage() {
 
   if (!googleClientId) {
     return (
-      // Hata ekranı için de aynı 'fixed' yapısını kullanıyoruz
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-8 text-center bg-background">
          <h1 className="text-xl sm:text-2xl font-bold text-destructive mb-2">Configuration Error</h1>
          <p className="text-muted-foreground text-sm">

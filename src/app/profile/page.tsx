@@ -89,7 +89,7 @@ export default function ProfilePage() {
               </Button>
             </Link>
             <div>
-                 <h1 className="text-2xl sm:text-3xl font-bold">{t('profileSettings')}</h1>
+                 <h1 className="text-2xl xs:text-3xl font-bold">{t('profileSettings')}</h1>
                 <p className="text-muted-foreground">{t('updateProfileDescription')}</p>
             </div>
         </header>

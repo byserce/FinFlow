@@ -140,7 +140,7 @@ export default function BudgetsPage() {
                         <AvatarFallback>{user?.display_name?.charAt(0) ?? 'U'}</AvatarFallback>
                     </Avatar>
                     <div>
-                        <h1 className="text-2xl font-bold group-hover:underline">{t('welcomeUser', { name: user?.display_name || '' })}</h1>
+                        <h1 className="text-xl xs:text-2xl font-bold group-hover:underline">{t('welcomeUser', { name: user?.display_name || '' })}</h1>
                         <p className="text-muted-foreground text-sm md:text-base">
                             {t('manageBudgets')}
                         </p>
@@ -289,12 +289,12 @@ export default function BudgetsPage() {
               <Card key={budget.id} className="rounded-2xl shadow-sm hover:shadow-md transition-shadow group">
                 <div className="p-6 flex justify-between items-start">
                     <Link href={`/budget/${budget.id}`} className="flex-grow space-y-4">
-                        <CardTitle className="flex items-center">
+                        <CardTitle className="flex items-center text-base xs:text-xl">
                             {getIcon()}
                             {budget.name}
                         </CardTitle>
                         <div>
-                            <div className="text-2xl font-bold">
+                            <div className="text-xl xs:text-2xl font-bold">
                             {formatCurrency(budget.balance, budget.currency, locale)}
                             </div>
                             <p className="text-xs text-muted-foreground">
