@@ -16,6 +16,7 @@ export type Database = {
           owner_id: string
           created_at: string
           join_code: string | null
+          mode: "tracking" | "sharing"
         }
         Insert: {
           id?: string
@@ -23,6 +24,7 @@ export type Database = {
           owner_id: string
           created_at?: string
           join_code?: string | null
+          mode?: "tracking" | "sharing"
         }
         Update: {
           id?: string
@@ -30,6 +32,7 @@ export type Database = {
           owner_id?: string
           created_at?: string
           join_code?: string | null
+          mode?: "tracking" | "sharing"
         }
       },
       budget_transactions: {

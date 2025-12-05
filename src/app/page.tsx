@@ -6,12 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatCurrency } from '@/lib/utils';
-import { Plus, Users, User, ArrowRight, LogOut, Trash2, UserPlus } from 'lucide-react';
+import { Plus, Users, User, ArrowRight, LogOut, Trash2, UserPlus, WalletCards, Receipt } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
   DialogFooter,
   DialogClose,
@@ -33,7 +34,8 @@ import { useUser } from '@/hooks/use-user';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/lib/hooks/use-app-context';
-
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 export default function BudgetsPage() {
   const { user, logout, isLoading: isUserLoading } = useUser();
@@ -184,14 +186,41 @@ export default function BudgetsPage() {
                     <form action={handleCreateBudgetAction}>
                         <DialogHeader>
                             <DialogTitle>Yeni Bütçe Oluştur</DialogTitle>
+                            <DialogDescription>
+                                Bütçenize bir isim verin ve amacınıza uygun modu seçin.
+                            </DialogDescription>
                         </DialogHeader>
-                        <div className="py-4">
-                            <Input
-                            id="name"
-                            name="name"
-                            placeholder="Bütçe adı (örn: Aile Bütçesi)"
-                            required
-                            />
+                        <div className="py-4 space-y-6">
+                             <div className="space-y-2">
+                                <Label htmlFor="name">Bütçe Adı</Label>
+                                <Input
+                                id="name"
+                                name="name"
+                                placeholder="Bütçe adı (örn: Aile Bütçesi)"
+                                required
+                                />
+                            </div>
+                            <RadioGroup name="mode" defaultValue="tracking" className="space-y-4">
+                                <Label>Bütçe Modu</Label>
+                                <div className="flex items-start p-4 border rounded-lg gap-4 has-[:checked]:bg-muted/50">
+                                    <RadioGroupItem value="tracking" id="tracking" className="mt-1"/>
+                                    <div className="grid gap-1.5">
+                                        <Label htmlFor="tracking" className="font-bold flex items-center gap-2">
+                                            <WalletCards className="w-4 h-4" /> Bütçe Takip Modu
+                                        </Label>
+                                        <p className="text-xs text-muted-foreground">Kişisel veya paylaşımlı bütçelerde gelir ve giderleri takip etmek için idealdir.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start p-4 border rounded-lg gap-4 has-[:checked]:bg-muted/50">
+                                    <RadioGroupItem value="sharing" id="sharing" className="mt-1"/>
+                                    <div className="grid gap-1.5">
+                                        <Label htmlFor="sharing" className="font-bold flex items-center gap-2">
+                                            <Receipt className="w-4 h-4" /> Harcama Paylaşım Modu
+                                        </Label>
+                                        <p className="text-xs text-muted-foreground">Arkadaşlarla yapılan ortak harcamaları adil bir şekilde bölüşmek ve borçları takip etmek için kullanılır.</p>
+                                    </div>
+                                </div>
+                            </RadioGroup>
                         </div>
                         <DialogFooter>
                             <DialogClose asChild>

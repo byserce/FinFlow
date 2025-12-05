@@ -12,6 +12,7 @@ export async function createBudget(formData: FormData) {
 
   const name = formData.get('name') as string;
   const ownerId = formData.get('owner_id') as string;
+  const mode = formData.get('mode') as 'tracking' | 'sharing';
 
   if (!ownerId) {
     return {
@@ -24,7 +25,7 @@ export async function createBudget(formData: FormData) {
   // 1. Create the new budget plan
   const { data: budgetData, error: budgetError } = await supabase
     .from('budget_plans')
-    .insert([{ name, owner_id: ownerId, join_code: joinCode }])
+    .insert([{ name, owner_id: ownerId, join_code: joinCode, mode }])
     .select()
     .single();
 
