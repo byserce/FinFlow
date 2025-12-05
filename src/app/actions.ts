@@ -1,9 +1,9 @@
+
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import type { Profile } from '@/lib/types';
-import { v4 as uuidv4 } from 'uuid';
 
 function generateJoinCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -13,41 +13,51 @@ function generateJoinCode() {
 export async function handleGoogleLogin(email: string, name: string, picture: string): Promise<Profile> {
   const supabase = createClient();
   
+  // 1. Check if a profile with this email already exists.
   const { data: existingProfile, error: fetchError } = await supabase
     .from('budget_profiles')
     .select('*')
     .eq('email', email)
     .single();
 
-  if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116: 'exact-one' violation (no rows found)
-    console.error('Error fetching profile:', fetchError);
-    throw new Error('Could not process login.');
-  }
-  
+  // If a user is found, return it.
   if (existingProfile) {
     return existingProfile;
   }
 
-  // Create new profile. The ID will be automatically populated by the database trigger
-  // that is linked to the auth.users table.
-  const { data: newProfile, error: insertError } = await supabase
-    .from('budget_profiles')
-    .insert({
-      // id is now omitted; it will be set by the trigger
-      email: email,
-      display_name: name,
-      photo_url: picture,
-      default_currency: 'USD'
-    })
-    .select()
-    .single();
+  // If no user is found (and it's the specific 'no rows' error), create one.
+  if (fetchError && fetchError.code === 'PGRST116') {
+    const { data: newProfile, error: insertError } = await supabase
+      .from('budget_profiles')
+      .insert({
+        email: email,
+        display_name: name,
+        photo_url: picture,
+        default_currency: 'USD' // Default currency for new users
+      })
+      .select()
+      .single();
 
-  if (insertError) {
-    console.error('Error creating profile:', insertError);
-    throw new Error('Could not create a new user profile.');
+    if (insertError) {
+      console.error('Error creating new user profile:', insertError);
+      throw new Error('Could not create a new user profile.');
+    }
+    
+    if (!newProfile) {
+        throw new Error('Failed to create and retrieve new user profile.');
+    }
+
+    return newProfile;
+  }
+  
+  // Handle other unexpected database errors during fetch
+  if (fetchError) {
+      console.error('Error fetching profile:', fetchError);
+      throw new Error('Could not process login due to a database error.');
   }
 
-  return newProfile;
+  // This part should not be reached if logic is correct, but as a fallback.
+  throw new Error('An unexpected error occurred during the login process.');
 }
 
 export async function createBudget(formData: FormData) {
@@ -398,5 +408,7 @@ export async function updateBudgetCurrency(budgetId: string, currency: string, u
     
     return { success: true };
 }
+
+    
 
     
