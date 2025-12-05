@@ -166,6 +166,53 @@ export async function addTransaction(formData: FormData) {
     }
 }
 
+export async function deleteTransaction(transactionId: string, budgetId: string, currentUserId: string) {
+    const supabase = createClient();
+
+    // Permission Check: Ensure user can perform this action
+    const { data: member, error: memberError } = await supabase
+        .from('budget_members')
+        .select('role')
+        .eq('plan_id', budgetId)
+        .eq('user_id', currentUserId)
+        .eq('status', 'accepted')
+        .single();
+    
+    if (memberError || !member) {
+        return { error: 'You are not a member of this budget.' };
+    }
+
+    if (member.role === 'viewer') {
+        return { error: 'You do not have permission to delete transactions in this budget.' };
+    }
+
+    // Delete participants associated with the transaction first
+    const { error: participantsError } = await supabase
+        .from('transaction_participants')
+        .delete()
+        .eq('transaction_id', transactionId);
+
+    if (participantsError) {
+        console.error('Error deleting transaction participants:', participantsError);
+        return { error: 'Failed to clear transaction participants before deletion.' };
+    }
+
+    // Delete the transaction itself
+    const { error: transactionError } = await supabase
+        .from('budget_transactions')
+        .delete()
+        .eq('id', transactionId);
+
+    if (transactionError) {
+        console.error('Error deleting transaction:', transactionError);
+        return { error: 'Failed to delete the transaction.' };
+    }
+    
+    revalidatePath(`/budget/${budgetId}/history`);
+    
+    return { success: true };
+}
+
 
 export async function joinBudgetByCode(formData: FormData) {
     const supabase = createClient();
