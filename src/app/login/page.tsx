@@ -31,8 +31,6 @@ function LoginScreen() {
 
   const performLogin = async (accessToken: string) => {
     try {
-      // While we get email/name/pic from the ID token, some flows might need the access token to fetch more profile data.
-      // We will fetch user info from the token endpoint for robustness.
       const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
@@ -52,7 +50,6 @@ function LoginScreen() {
         login(result.user);
         toast({ title: t('success'), description: t('loginSuccess') });
         router.push('/');
-        // Force a reload to ensure AppProvider picks up the new user state
         router.refresh();
       }
     } catch (error) {
@@ -70,7 +67,8 @@ function LoginScreen() {
   });
 
   return (
-    <div className="flex h-screen flex-col items-center justify-between p-8 bg-background">
+    <div className="flex h-screen flex-col bg-background p-8 overflow-hidden">
+        {/* Main content area that fills available space */}
         <div className="flex-1 flex flex-col items-center justify-center text-center">
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -89,8 +87,9 @@ function LoginScreen() {
             </motion.div>
         </div>
 
+        {/* Bottom button area */}
         <motion.div
-            className="w-full max-w-sm pb-4"
+            className="w-full max-w-sm mx-auto"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
