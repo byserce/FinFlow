@@ -8,6 +8,7 @@ import { AiInsights } from '@/components/analytics/ai-insights';
 import type { Transaction } from '@/lib/types';
 import { useBudget } from '@/lib/hooks/use-app-context';
 import { isWithinInterval, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
+import { MemberAnalysisChart } from './member-analysis-chart';
 
 type TimeRange = 'week' | 'month' | 'year';
 
@@ -70,6 +71,7 @@ export function AnalyticsView({ budgetId }: { budgetId: string }) {
         </TabsList>
         
         <div className="mt-6 space-y-6">
+          <MemberAnalysisChart transactions={filteredTransactions} members={budget.members} />
           <SpendingChart transactions={filteredTransactions} />
           <TrendChart transactions={budget.transactions} />
           <AiInsights transactions={budget.transactions} />
