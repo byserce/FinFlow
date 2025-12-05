@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 function generateJoinCode() {
   return Math.random().toString(36).substring(2, 11);
@@ -52,8 +53,6 @@ export async function createBudget(formData: FormData) {
 export async function deleteBudget(budgetId: string) {
     const supabase = createClient();
     
-    // The database is set up with cascading deletes, so deleting a budget_plan
-    // will also delete associated budget_members and budget_transactions.
     const { error } = await supabase
         .from('budget_plans')
         .delete()
@@ -99,4 +98,129 @@ export async function addTransaction(formData: FormData) {
             error: 'Could not add the transaction. Please try again.'
         }
     }
+}
+
+
+export async function joinBudgetByCode(formData: FormData) {
+    const supabase = createClient();
+    const joinCode = formData.get('join_code') as string;
+    const userId = formData.get('user_id') as string;
+
+    if (!joinCode || !userId) {
+        return { error: 'Join code and user ID are required.' };
+    }
+
+    // 1. Find the budget plan with the join code
+    const { data: plan, error: planError } = await supabase
+        .from('budget_plans')
+        .select('id, owner_id')
+        .eq('join_code', joinCode)
+        .single();
+
+    if (planError || !plan) {
+        return { error: 'Invalid join code. Please check the code and try again.' };
+    }
+    
+    if (plan.owner_id === userId) {
+        return { error: 'You are the owner of this budget.' };
+    }
+
+    // 2. Check if a request or membership already exists
+    const { data: existingMember, error: existingMemberError } = await supabase
+        .from('budget_members')
+        .select('*')
+        .eq('plan_id', plan.id)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    if(existingMember) {
+        if(existingMember.status === 'accepted') {
+            return { error: 'You are already a member of this budget.' };
+        }
+        if(existingMember.status === 'pending') {
+            return { error: 'You have already sent a join request for this budget.' };
+        }
+    }
+
+    // 3. Create a pending join request
+    const { error: insertError } = await supabase
+        .from('budget_members')
+        .insert({
+            plan_id: plan.id,
+            user_id: userId,
+            role: 'viewer', // Default role for new requests
+            status: 'pending',
+        });
+
+    if (insertError) {
+        console.error('Error creating join request:', insertError);
+        return { error: 'Could not send join request. Please try again.' };
+    }
+
+    revalidatePath(`/budget/${plan.id}/settings`);
+
+    return { success: true };
+}
+
+
+export async function updateMemberStatus(planId: string, memberId: string, status: 'accepted' | 'rejected') {
+    const supabase = createClient();
+
+    if (status === 'rejected') {
+        const { error } = await supabase
+            .from('budget_members')
+            .delete()
+            .eq('plan_id', planId)
+            .eq('user_id', memberId);
+
+         if (error) return { error: 'Failed to reject request.' };
+    } else {
+         const { error } = await supabase
+            .from('budget_members')
+            .update({ status })
+            .eq('plan_id', planId)
+            .eq('user_id', memberId);
+        
+        if (error) return { error: 'Failed to accept request.' };
+    }
+    
+    revalidatePath(`/budget/${planId}/settings`);
+    return { success: true };
+}
+
+export async function updateMemberRole(planId: string, memberId: string, role: 'editor' | 'viewer') {
+    const supabase = createClient();
+    
+    const { error } = await supabase
+        .from('budget_members')
+        .update({ role })
+        .eq('plan_id', planId)
+        .eq('user_id', memberId);
+
+    if (error) {
+        console.error('Error updating role:', error);
+        return { error: 'Failed to update member role.' };
+    }
+
+    revalidatePath(`/budget/${planId}/settings`);
+    return { success: true };
+}
+
+
+export async function removeMember(planId: string, memberId: string) {
+    const supabase = createClient();
+    
+    const { error } = await supabase
+        .from('budget_members')
+        .delete()
+        .eq('plan_id', planId)
+        .eq('user_id', memberId);
+
+    if (error) {
+        console.error('Error removing member:', error);
+        return { error: 'Failed to remove member.' };
+    }
+
+    revalidatePath(`/budget/${planId}/settings`);
+    return { success: true };
 }

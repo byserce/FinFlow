@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BarChart2, History, Wallet } from 'lucide-react';
+import { Home, BarChart2, History, Wallet, Settings } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/hooks/use-user';
@@ -19,9 +19,10 @@ function BottomNav() {
 
   const navItems = [
     { href: '/', label: 'Bütçeler', icon: Wallet, exact: true },
-    { href: `/budget/${budgetId}`, label: 'Genel Bakış', icon: Home },
+    { href: `/budget/${budgetId}`, label: 'Genel Bakış', icon: Home, exact: true },
     { href: `/budget/${budgetId}/analytics`, label: 'Analiz', icon: BarChart2 },
     { href: `/budget/${budgetId}/history`, label: 'Geçmiş', icon: History },
+    { href: `/budget/${budgetId}/settings`, label: 'Ayarlar', icon: Settings },
   ];
 
   // If we are not in a specific budget, only show the Budgets link
@@ -34,10 +35,21 @@ function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-20 bg-background/80 backdrop-blur-lg border-t border-border/50 shadow-t-lg md:hidden z-50">
-      <div className={`grid h-full max-w-lg mx-auto grid-cols-${itemsToShow.length}`}>
+      <div style={{ gridTemplateColumns: `repeat(${itemsToShow.length}, 1fr)`}} className={`grid h-full max-w-lg mx-auto`}>
         {itemsToShow.map((item) => {
           if (!item.href) return null;
-          const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href) && item.href !== '/';
+          // Updated isActive logic for more precise matching
+          const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href) && !item.exact;
+           const isSettingsActive = item.label === 'Ayarlar' && pathname.includes('settings');
+          const finalIsActive = isSettingsActive || (item.exact ? pathname === item.href : pathname.startsWith(item.href) && item.href !== '/' && !pathname.includes('settings'));
+          const budgetHomeActive = item.href === `/budget/${budgetId}` && pathname === `/budget/${budgetId}`;
+
+           let realIsActive = item.exact ? pathname === item.href : pathname.startsWith(item.href) && item.href !== '/';
+            if (item.href === `/budget/${budgetId}` && pathname !== `/budget/${budgetId}`) {
+                realIsActive = false;
+            }
+
+
           return (
             <Link
               key={item.label}
@@ -47,12 +59,12 @@ function BottomNav() {
               <item.icon
                 className={cn(
                   'h-6 w-6 mb-1 transition-colors',
-                  isActive ? 'text-primary' : 'text-muted-foreground'
+                  realIsActive ? 'text-primary' : 'text-muted-foreground'
                 )}
               />
               <span className={cn(
                 'text-xs font-medium transition-colors',
-                isActive ? 'text-primary' : 'text-muted-foreground'
+                realIsActive ? 'text-primary' : 'text-muted-foreground'
                 )}
               >
                 {item.label}

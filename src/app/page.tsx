@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatCurrency } from '@/lib/utils';
-import { Plus, Users, User, ArrowRight, LogOut, Trash2 } from 'lucide-react';
+import { Plus, Users, User, ArrowRight, LogOut, Trash2, UserPlus } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -28,7 +28,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useToast } from '@/hooks/use-toast';
-import { createBudget, deleteBudget } from './actions';
+import { createBudget, deleteBudget, joinBudgetByCode } from './actions';
 import { useUser } from '@/hooks/use-user';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
@@ -39,7 +39,8 @@ export default function BudgetsPage() {
   const { user, logout, isLoading: isUserLoading } = useUser();
   const { budgets, isLoading: isBudgetsLoading, refetch } = useAppContext();
   const router = useRouter();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -71,9 +72,33 @@ export default function BudgetsPage() {
             description: 'Yeni bütçe oluşturuldu.',
         });
         await refetch();
-        setIsDialogOpen(false);
+        setIsCreateDialogOpen(false);
     }
   };
+  
+  const handleJoinBudgetAction = async (formData: FormData) => {
+    if (user) {
+        formData.append('user_id', user.id);
+    }
+    
+    const result = await joinBudgetByCode(formData);
+
+    if (result?.error) {
+         toast({
+            variant: 'destructive',
+            title: 'Hata',
+            description: result.error,
+        });
+    } else {
+        toast({
+            title: 'Başarılı',
+            description: 'Katılım isteğiniz gönderildi.',
+        });
+        await refetch();
+        setIsJoinDialogOpen(false);
+    }
+  }
+
 
   const handleDeleteBudgetAction = async (budgetId: string) => {
     const result = await deleteBudget(budgetId);
@@ -115,7 +140,36 @@ export default function BudgetsPage() {
             </div>
           </div>
           <div className='flex items-center gap-2'>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isJoinDialogOpen} onOpenChange={setIsJoinDialogOpen}>
+              <DialogTrigger asChild>
+                 <Button variant="outline">
+                    <UserPlus className="mr-2 h-4 w-4" /> Bütçeye Katıl
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <form action={handleJoinBudgetAction}>
+                    <DialogHeader>
+                        <DialogTitle>Bütçeye Katıl</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Input
+                        id="join_code"
+                        name="join_code"
+                        placeholder="9 haneli katılım kodu"
+                        required
+                        />
+                    </div>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                        <Button variant="outline">İptal</Button>
+                        </DialogClose>
+                        <Button type="submit">İstek Gönder</Button>
+                    </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
                 <Button>
                     <Plus className="mr-2 h-4 w-4" /> Yeni Bütçe
@@ -171,27 +225,29 @@ export default function BudgetsPage() {
                          <Link href={`/budget/${budget.id}`} className="opacity-0 group-hover:opacity-100 transition-opacity">
                             <ArrowRight className="text-muted-foreground" />
                         </Link>
-                         <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity ml-2">
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                <AlertDialogTitle>Emin misiniz?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Bu eylem geri alınamaz. Bu, &quot;{budget.name}&quot; bütçesini ve içindeki tüm işlemleri kalıcı olarak silecektir.
-                                </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                <AlertDialogCancel>İptal</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeleteBudgetAction(budget.id)}>
-                                    Sil
-                                </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
+                         {user.id === budget.owner_id && (
+                             <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity ml-2">
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                    <AlertDialogTitle>Emin misiniz?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Bu eylem geri alınamaz. Bu, &quot;{budget.name}&quot; bütçesini ve içindeki tüm işlemleri kalıcı olarak silecektir.
+                                    </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                    <AlertDialogCancel>İptal</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteBudgetAction(budget.id)}>
+                                        Sil
+                                    </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                         )}
                     </div>
                     </CardTitle>
                   </CardHeader>
