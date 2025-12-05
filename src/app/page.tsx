@@ -46,7 +46,8 @@ export default function BudgetsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false);
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const locale = language === 'tr' ? 'tr-TR' : 'en-US';
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -55,7 +56,7 @@ export default function BudgetsPage() {
   }, [user, isUserLoading, router]);
 
   if (isUserLoading || !user) {
-    return <div className="flex items-center justify-center h-screen">{t('loading')}</div>;
+    return <div className="flex items-center justify-center h-screen">{t('loading')}...</div>;
   }
   
   const getProfile = (userId: string) => allProfiles.find(p => p.id === userId);
@@ -214,10 +215,10 @@ export default function BudgetsPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="currency">Currency</Label>
+                                    <Label htmlFor="currency">{t('currency')}</Label>
                                     <Select name="currency" defaultValue={user.default_currency || 'USD'}>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select currency" />
+                                            <SelectValue placeholder={t('selectCurrency')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="USD">USD ($)</SelectItem>
@@ -319,7 +320,7 @@ export default function BudgetsPage() {
                     <div className="flex justify-between items-end">
                       <div>
                         <div className="text-2xl font-bold">
-                          {formatCurrency(budget.balance, budget.currency)}
+                          {formatCurrency(budget.balance, budget.currency, locale)}
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {budget.transactions.length} {t('transactions')}

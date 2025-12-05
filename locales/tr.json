@@ -55,7 +55,7 @@
   "totalSpending": "Toplam Harcama",
   "whoOwesWhom": "Kim Kime Borçlu?",
   "debtSummaryDescription": "Hesaplanan borç ve alacak durumu.",
-  "noDebts": "Henüz kimsenin kimseye borcu yok. Herkes heasbını ödemiş.",
+  "noDebts": "Henüz kimsenin kimseye borcu yok. Herkes hesabını ödemiş.",
   "atLeastTwoMembers": "Borç hesabı için en az 2 üye olmalıdır.",
   "netBalance": "Net Bakiye Durumu",
   "income": "Gelir",
@@ -111,7 +111,6 @@
   "editor": "Düzenleyici",
   "viewer": "Görüntüleyici",
   "success": "Başarılı",
-
   "error": "Hata",
   "invalidCredentials": "Geçersiz e-posta veya şifre.",
   "loginSuccess": "Başarıyla giriş yaptınız.",
@@ -127,7 +126,6 @@
   "memberRemoveSuccess": "Üye kaldırıldı.",
   "transactionAddSuccess": "İşlem başarıyla eklendi.",
   "transactionDeleteSuccess": "İşlem silindi.",
-
   "selectDate": "Tarih Seç",
   "amount": "Tutar",
   "category": "Kategori",
@@ -137,7 +135,6 @@
   "selectPayer": "Harcamayı yapanı seçin",
   "commonExpense": "Ortak Harcama",
   "saveTransaction": "İşlemi Kaydet",
-  
   "error_mustSelectCategory": "Lütfen bir kategori seçin.",
   "error_mustSelectPayer": "Lütfen harcamayı yapan kişiyi seçin.",
   "error_mustSelectParticipant": "Lütfen en az bir katılımcı seçin.",
@@ -145,6 +142,12 @@
   "language": "Dil",
   "turkish": "Türkçe",
   "english": "İngilizce",
-  "welcomeUser": "Hoşgeldin, {name}"
+  "welcomeUser": "Hoşgeldin, {name}",
+  "loading": "Yükleniyor",
+  "unknownUser": "Bilinmeyen Kullanıcı",
+  "formerMember": "Eski Üye",
+  "currency": "Para Birimi",
+  "selectCurrency": "Para birimi seçin",
+  "defaultCurrency": "Varsayılan Para Birimi",
+  "budgetCurrencyUpdated": "Bütçe para birimi güncellendi."
 }
-    

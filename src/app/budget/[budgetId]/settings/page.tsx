@@ -93,7 +93,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
     if (error) {
         toast({ variant: 'destructive', title: t('error'), description: error });
     } else {
-        toast({ title: t('success'), description: "Budget currency updated." });
+        toast({ title: t('success'), description: t("budgetCurrencyUpdated") });
         await refetch();
     }
   }
@@ -130,13 +130,13 @@ export default function SettingsPage({ params }: SettingsPageProps) {
         {isOwner && (
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><DollarSign /> Currency</CardTitle>
-                    <CardDescription>Set the currency for this budget.</CardDescription>
+                    <CardTitle className="flex items-center gap-2"><DollarSign /> {t('currency')}</CardTitle>
+                    <CardDescription>{t('setCurrencyForBudget')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Select value={budget.currency} onValueChange={handleCurrencyUpdate}>
                         <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select currency" />
+                            <SelectValue placeholder={t('selectCurrency')} />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="USD">USD ($)</SelectItem>
@@ -185,7 +185,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
                           <AvatarFallback>{memberProfile?.display_name?.charAt(0) ?? '?'}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-semibold">{memberProfile?.display_name ?? 'Bilinmeyen Kullanıcı'}</p>
+                          <p className="font-semibold">{memberProfile?.display_name ?? t('unknownUser')}</p>
                           <p className="text-xs text-muted-foreground">{member.user_id.substring(0, 8)}</p>
                         </div>
                     </div>
@@ -217,7 +217,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
                             <AvatarFallback>{memberProfile?.display_name?.charAt(0) ?? '?'}</AvatarFallback>
                         </Avatar>
                         <div>
-                            <p className="font-semibold">{memberProfile?.display_name ?? 'Bilinmeyen Kullanıcı'}</p>
+                            <p className="font-semibold">{memberProfile?.display_name ?? t('unknownUser')}</p>
                             <p className="text-xs text-muted-foreground">{member.user_id.substring(0, 8)}</p>
                         </div>
                     </div>

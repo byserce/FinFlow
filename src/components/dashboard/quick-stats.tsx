@@ -8,7 +8,9 @@ import type { Budget } from '@/lib/types';
 import { useTranslation } from '@/hooks/use-translation';
 
 export function QuickStats({ budget }: { budget: Budget }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const locale = language === 'tr' ? 'tr-TR' : 'en-US';
+  
   const { monthlyIncome, monthlyExpenses } = useMemo(() => {
     const currentMonthTransactions = budget.transactions.filter((t) => isThisMonth(parseISO(t.date)));
     
@@ -35,7 +37,7 @@ export function QuickStats({ budget }: { budget: Budget }) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {formatCurrency(monthlyIncome, budget.currency)}
+            {formatCurrency(monthlyIncome, budget.currency, locale)}
           </div>
           <p className="text-xs text-muted-foreground">{t('thisMonth')}</p>
         </CardContent>
@@ -47,7 +49,7 @@ export function QuickStats({ budget }: { budget: Budget }) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {formatCurrency(monthlyExpenses, budget.currency)}
+            {formatCurrency(monthlyExpenses, budget.currency, locale)}
           </div>
           <p className="text-xs text-muted-foreground">{t('thisMonth')}</p>
         </CardContent>

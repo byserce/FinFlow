@@ -13,7 +13,8 @@ interface TrendChartProps {
 }
 
 export function TrendChart({ transactions }: TrendChartProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const locale = language === 'tr' ? 'tr-TR' : 'en-US';
   const budgetId = transactions[0]?.plan_id;
   const { budget } = useBudget(budgetId);
   
@@ -76,10 +77,10 @@ export function TrendChart({ transactions }: TrendChartProps) {
                 fontSize={12} 
                 tickLine={false} 
                 axisLine={false}
-                tickFormatter={(value) => `$${Number(value) / 1000}k`}
+                tickFormatter={(value) => formatCurrency(value as number, budget?.currency || 'USD', locale).replace(/\.00$/, '').slice(0,-1) + 'k'}
               />
               <Tooltip 
-                 formatter={(value: number) => [formatCurrency(value, budget?.currency || 'USD'), 'Balance']}
+                 formatter={(value: number) => [formatCurrency(value, budget?.currency || 'USD', locale), 'Balance']}
                  contentStyle={{
                     backgroundColor: 'hsl(var(--background))',
                     borderRadius: 'var(--radius)',

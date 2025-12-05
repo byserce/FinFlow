@@ -135,10 +135,10 @@ export default function ProfilePage() {
                   </Select>
                 </div>
                  <div className="space-y-2">
-                  <Label>Default Currency</Label>
+                  <Label>{t('defaultCurrency')}</Label>
                   <Select value={defaultCurrency} onValueChange={setDefaultCurrency}>
                       <SelectTrigger>
-                          <SelectValue placeholder="Select currency" />
+                          <SelectValue placeholder={t('selectCurrency')} />
                       </SelectTrigger>
                       <SelectContent>
                           <SelectItem value="USD">USD ($)</SelectItem>

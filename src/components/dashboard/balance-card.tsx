@@ -7,7 +7,9 @@ import { useMemo } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 
 export function BalanceCard({ budget }: { budget: Budget }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const locale = language === 'tr' ? 'tr-TR' : 'en-US';
+
   const balance = useMemo(() => {
     return budget.transactions.reduce((acc, tx) => {
       if (tx.type === 'income') {
@@ -26,7 +28,7 @@ export function BalanceCard({ budget }: { budget: Budget }) {
             <Wallet className="w-4 h-4 mr-2" /> {t('totalBalance')}
           </p>
           <p className="text-4xl font-bold tracking-tighter mt-2">
-            {formatCurrency(balance, budget.currency)}
+            {formatCurrency(balance, budget.currency, locale)}
           </p>
         </div>
       </CardContent>

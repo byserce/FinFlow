@@ -86,7 +86,9 @@ const calculateDebts = (budget: Budget, participants: TransactionParticipant[]):
 
 export function DebtSummary({ budget }: { budget: Budget }) {
     const { allProfiles, transactionParticipants, isLoading } = useAppContext();
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
+    const locale = language === 'tr' ? 'tr-TR' : 'en-US';
+
     const getProfile = (userId: string): Profile | undefined => allProfiles.find(p => p.id === userId);
 
     const { debts, balances, totalSpending } = useMemo(() => {
@@ -109,7 +111,7 @@ export function DebtSummary({ budget }: { budget: Budget }) {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-3xl font-bold">{formatCurrency(totalSpending, budget.currency)}</p>
+                    <p className="text-3xl font-bold">{formatCurrency(totalSpending, budget.currency, locale)}</p>
                 </CardContent>
             </Card>
 
@@ -137,7 +139,7 @@ export function DebtSummary({ budget }: { budget: Budget }) {
                                 </div>
                                 
                                 <div className="flex flex-col items-center text-center">
-                                    <span className='font-bold text-destructive'>{formatCurrency(debt.amount, budget.currency)}</span>
+                                    <span className='font-bold text-destructive'>{formatCurrency(debt.amount, budget.currency, locale)}</span>
                                     <ArrowRight className="h-4 w-4 text-muted-foreground" />
                                 </div>
 
@@ -182,7 +184,7 @@ export function DebtSummary({ budget }: { budget: Budget }) {
                                     </div>
                                     <div className={`flex items-center font-bold ${isCreditor ? 'text-green-500' : isDebtor ? 'text-destructive' : 'text-muted-foreground'}`}>
                                         {isCreditor ? <Plus className='w-4 h-4 mr-1'/> : isDebtor ? <Minus className='w-4 h-4 mr-1'/> : null}
-                                        {formatCurrency(Math.abs(balance), budget.currency)}
+                                        {formatCurrency(Math.abs(balance), budget.currency, locale)}
                                     </div>
                                 </div>
                              )

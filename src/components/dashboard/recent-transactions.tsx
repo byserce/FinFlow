@@ -15,7 +15,8 @@ import { useTranslation } from '@/hooks/use-translation';
 
 export function RecentTransactions({ budget }: { budget: Budget }) {
   const { allProfiles } = useAppContext();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const locale = language === 'tr' ? 'tr-TR' : 'en-US';
 
   const getProfile = (userId: string): Profile | undefined => {
     return allProfiles.find(p => p.id === userId);
@@ -59,7 +60,7 @@ export function RecentTransactions({ budget }: { budget: Budget }) {
                 }`}
               >
                 {tx.type === 'income' ? '+' : '-'}
-                {formatCurrency(tx.amount, budget.currency)}
+                {formatCurrency(tx.amount, budget.currency, locale)}
               </div>
             </div>
           )}) : (

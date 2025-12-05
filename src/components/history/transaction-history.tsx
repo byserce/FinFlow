@@ -40,7 +40,8 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [openCollapsibleId, setOpenCollapsibleId] = useState<string | null>(null);
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const locale = language === 'tr' ? 'tr-TR' : 'en-US';
   
   const transactions = useMemo(() => 
     [...(budget?.transactions || [])].sort((a, b) => parseISO(b.date).getTime() - parseISO(a.date).getTime()),
@@ -149,7 +150,7 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
                             </div>
                             <div className={`font-medium mr-2 ${tx.type === 'income' ? 'text-green-500' : 'text-foreground'}`}>
                                {tx.type === 'income' ? '+' : '-'}
-                               {formatCurrency(tx.amount, budget.currency)}
+                               {formatCurrency(tx.amount, budget.currency, locale)}
                             </div>
                             <div className='flex items-center'>
                               {canEdit && (

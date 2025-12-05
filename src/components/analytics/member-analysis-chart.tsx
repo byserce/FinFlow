@@ -15,7 +15,8 @@ interface MemberAnalysisChartProps {
 
 export function MemberAnalysisChart({ transactions, members, mode }: MemberAnalysisChartProps) {
   const { allProfiles } = useAppContext();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const locale = language === 'tr' ? 'tr-TR' : 'en-US';
   const budgetId = transactions[0]?.plan_id;
   const { budget } = useBudget(budgetId);
   
@@ -89,9 +90,9 @@ export function MemberAnalysisChart({ transactions, members, mode }: MemberAnaly
               <BarChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false}/>
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => formatCurrency(value as number, budget?.currency || 'USD')}/>
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => formatCurrency(value as number, budget?.currency || 'USD', locale)}/>
                 <Tooltip
-                  formatter={(value: number) => formatCurrency(value, budget?.currency || 'USD')}
+                  formatter={(value: number) => formatCurrency(value, budget?.currency || 'USD', locale)}
                   contentStyle={{
                     backgroundColor: 'hsl(var(--background))',
                     borderRadius: 'var(--radius)',

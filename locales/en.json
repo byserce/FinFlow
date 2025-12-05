@@ -111,7 +111,6 @@
   "editor": "Editor",
   "viewer": "Viewer",
   "success": "Success",
-
   "error": "Error",
   "invalidCredentials": "Invalid email or password.",
   "loginSuccess": "You have successfully logged in.",
@@ -127,7 +126,6 @@
   "memberRemoveSuccess": "Member has been removed.",
   "transactionAddSuccess": "Transaction added successfully.",
   "transactionDeleteSuccess": "Transaction deleted.",
-  
   "selectDate": "Select Date",
   "amount": "Amount",
   "category": "Category",
@@ -137,7 +135,6 @@
   "selectPayer": "Select who paid",
   "commonExpense": "Common Expense",
   "saveTransaction": "Save Transaction",
-  
   "error_mustSelectCategory": "Please select a category.",
   "error_mustSelectPayer": "Please select who paid.",
   "error_mustSelectParticipant": "Please select at least one participant.",
@@ -145,6 +142,12 @@
   "language": "Language",
   "turkish": "Turkish",
   "english": "English",
-  "welcomeUser": "Welcome, {name}"
+  "welcomeUser": "Welcome, {name}",
+  "loading": "Loading",
+  "unknownUser": "Unknown User",
+  "formerMember": "Former Member",
+  "currency": "Currency",
+  "selectCurrency": "Select currency",
+  "defaultCurrency": "Default Currency",
+  "budgetCurrencyUpdated": "Budget currency updated."
 }
-    
