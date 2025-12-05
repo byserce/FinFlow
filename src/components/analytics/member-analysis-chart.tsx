@@ -1,6 +1,6 @@
 'use client';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import type { Transaction, Member, Profile } from '@/lib/types';
 import { useMemo } from 'react';
 import { formatCurrency } from '@/lib/utils';
@@ -9,9 +9,10 @@ import { useAppContext } from '@/lib/hooks/use-app-context';
 interface MemberAnalysisChartProps {
   transactions: Transaction[];
   members: Member[];
+  mode: 'tracking' | 'sharing';
 }
 
-export function MemberAnalysisChart({ transactions, members }: MemberAnalysisChartProps) {
+export function MemberAnalysisChart({ transactions, members, mode }: MemberAnalysisChartProps) {
   const { allProfiles } = useAppContext();
   
   const getProfile = (userId: string): Profile | undefined => {
@@ -33,10 +34,14 @@ export function MemberAnalysisChart({ transactions, members }: MemberAnalysisCha
       }
     });
 
-    // Initialize common spending
-    analysis['common'] = { name: 'Ortak', income: 0, expense: 0 };
+    if (mode === 'tracking') {
+       analysis['common'] = { name: 'Ortak', income: 0, expense: 0 };
+    }
     
     transactions.forEach(tx => {
+      // In sharing mode, only expenses with a payer are relevant for this chart
+      if (mode === 'sharing' && (!tx.payer_id || tx.type === 'income')) return;
+
       const key = tx.payer_id || 'common';
       
       // Ensure user exists in analysis (e.g. if they left the budget)
@@ -58,12 +63,20 @@ export function MemberAnalysisChart({ transactions, members }: MemberAnalysisCha
     
     return Object.values(analysis).filter(d => d.income > 0 || d.expense > 0);
 
-  }, [transactions, members, allProfiles]);
+  }, [transactions, members, allProfiles, mode]);
+  
+  const isSharingMode = mode === 'sharing';
 
   return (
     <Card className="rounded-2xl shadow-sm">
       <CardHeader>
-        <CardTitle>Member Contribution</CardTitle>
+        <CardTitle>{isSharingMode ? 'Kim Ne Kadar Ödedi?' : 'Üye Katkıları'}</CardTitle>
+        <CardDescription>
+            {isSharingMode 
+                ? 'Her üyenin yaptığı toplam ödeme miktarı.'
+                : 'Her üyenin gelir ve giderlere olan katkısı.'
+            }
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {data.length > 0 ? (
@@ -83,14 +96,14 @@ export function MemberAnalysisChart({ transactions, members }: MemberAnalysisCha
                   cursor={{ fill: 'hsl(var(--muted))' }}
                 />
                 <Legend iconType="circle" />
-                <Bar dataKey="income" fill="hsl(var(--chart-1))" name="Income" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="expense" fill="hsl(var(--chart-2))" name="Expense" radius={[4, 4, 0, 0]}/>
+                {!isSharingMode && <Bar dataKey="income" fill="hsl(var(--chart-1))" name="Gelir" radius={[4, 4, 0, 0]} />}
+                <Bar dataKey="expense" fill={isSharingMode ? "hsl(var(--primary))" : "hsl(var(--chart-2))"} name={isSharingMode ? "Ödenen Tutar" : "Gider"} radius={[4, 4, 0, 0]}/>
               </BarChart>
             </ResponsiveContainer>
           </div>
         ) : (
           <div className="h-[250px] flex items-center justify-center">
-            <p className="text-muted-foreground">No data for this period.</p>
+            <p className="text-muted-foreground">Bu dönem için veri bulunamadı.</p>
           </div>
         )}
       </CardContent>

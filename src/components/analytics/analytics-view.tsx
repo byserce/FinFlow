@@ -55,6 +55,7 @@ export function AnalyticsView({ budgetId }: { budgetId: string }) {
   }
 
   const filteredTransactions = filterTransactions(budget.transactions, timeRange);
+  const isSharingMode = budget.mode === 'sharing';
 
   return (
     <div className="p-4 md:p-6 space-y-6">
@@ -71,9 +72,9 @@ export function AnalyticsView({ budgetId }: { budgetId: string }) {
         </TabsList>
         
         <div className="mt-6 space-y-6">
-          <MemberAnalysisChart transactions={filteredTransactions} members={budget.members} />
+          <MemberAnalysisChart transactions={filteredTransactions} members={budget.members} mode={budget.mode} />
           <SpendingChart transactions={filteredTransactions} />
-          <TrendChart transactions={budget.transactions} />
+          {!isSharingMode && <TrendChart transactions={budget.transactions} />}
           <AiInsights transactions={budget.transactions} />
         </div>
       </Tabs>
