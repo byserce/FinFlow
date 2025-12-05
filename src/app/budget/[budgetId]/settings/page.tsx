@@ -37,7 +37,8 @@ interface SettingsPageProps {
 }
 
 export default function SettingsPage({ params }: SettingsPageProps) {
-  const { budget, isLoading } = useBudget(params.budgetId);
+  const budgetId = params.budgetId;
+  const { budget, isLoading } = useBudget(budgetId);
   const { user } = useUser();
   const { refetch, allProfiles } = useAppContext();
   const { toast } = useToast();
@@ -58,7 +59,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
   };
 
   const handleStatusUpdate = async (memberId: string, status: 'accepted' | 'rejected') => {
-    const { error } = await updateMemberStatus(params.budgetId, memberId, status);
+    const { error } = await updateMemberStatus(budgetId, memberId, status);
     if (error) {
       toast({ variant: 'destructive', title: t('error'), description: error });
     } else {
@@ -68,7 +69,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
   };
   
   const handleRoleUpdate = async (memberId: string, role: 'editor' | 'viewer') => {
-    const { error } = await updateMemberRole(params.budgetId, memberId, role);
+    const { error } = await updateMemberRole(budgetId, memberId, role);
      if (error) {
       toast({ variant: 'destructive', title: t('error'), description: error });
     } else {
@@ -78,7 +79,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
   }
 
   const handleRemoveMember = async (memberId: string) => {
-    const { error } = await removeMember(params.budgetId, memberId);
+    const { error } = await removeMember(budgetId, memberId);
     if (error) {
       toast({ variant: 'destructive', title: t('error'), description: error });
     } else {
@@ -239,5 +240,3 @@ export default function SettingsPage({ params }: SettingsPageProps) {
     </PageTransition>
   );
 }
-
-    

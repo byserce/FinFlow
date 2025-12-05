@@ -1,3 +1,4 @@
+'use client';
 import { PageTransition } from "@/components/page-transition";
 import { TransactionHistory } from "@/components/history/transaction-history";
 import { useTranslation } from "@/hooks/use-translation";
@@ -20,5 +21,3 @@ export default function HistoryPage({ params }: HistoryPageProps) {
     </PageTransition>
   );
 }
-
-    

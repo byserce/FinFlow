@@ -20,7 +20,8 @@ interface BudgetDashboardPageProps {
 
 export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps) {
   const { user } = useUser();
-  const { budget, isLoading } = useBudget(params.budgetId);
+  const budgetId = params.budgetId;
+  const { budget, isLoading } = useBudget(budgetId);
   const { allProfiles } = useAppContext();
   const { t } = useTranslation();
   
@@ -118,5 +119,3 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
     </PageTransition>
   );
 }
-
-    
