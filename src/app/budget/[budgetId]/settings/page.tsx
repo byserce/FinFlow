@@ -152,7 +152,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
                         </Avatar>
                         <div>
                           <p className="font-semibold">{memberProfile?.display_name ?? 'Bilinmeyen Kullanıcı'}</p>
-                          <p className="text-xs text-muted-foreground">{member.user_id}</p>
+                          <p className="text-xs text-muted-foreground">{member.user_id.substring(0, 8)}</p>
                         </div>
                     </div>
                     <div className="flex gap-2">
@@ -184,7 +184,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
                         </Avatar>
                         <div>
                             <p className="font-semibold">{memberProfile?.display_name ?? 'Bilinmeyen Kullanıcı'}</p>
-                            <p className="text-xs text-muted-foreground">{member.user_id}</p>
+                            <p className="text-xs text-muted-foreground">{member.user_id.substring(0, 8)}</p>
                         </div>
                     </div>
 
