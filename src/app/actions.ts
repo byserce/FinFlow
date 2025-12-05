@@ -9,7 +9,8 @@ import { v4 as uuidv4 } from 'uuid';
 const ALLOWED_EMAILS = [
   "atakan.serce1@gmail.com",
   "atakan.serce4@gmail.com",
-  "ceylin.ads1@gmail.com"
+  "ceylin.ads1@gmail.com",
+  "cey1725@gmail.com"
 ];
 
 function generateJoinCode() {
@@ -427,3 +428,6 @@ export async function updateBudgetCurrency(budgetId: string, currency: string, u
 
     
 
+
+
+    
