@@ -124,7 +124,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
     <PageTransition>
       <div className="p-4 md:p-6 space-y-6">
         <header>
-          <h1 className="text-3xl font-bold">{t('budgetSettings')}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">{t('budgetSettings')}</h1>
           <p className="text-muted-foreground">{budget.name}</p>
         </header>
 
@@ -157,7 +157,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
                 </CardHeader>
                 <CardContent>
                     <Select value={budget.currency} onValueChange={handleCurrencyUpdate}>
-                        <SelectTrigger className="w-[180px]">
+                        <SelectTrigger className="w-full sm:w-[180px]">
                             <SelectValue placeholder={t('selectCurrency')} />
                         </SelectTrigger>
                         <SelectContent>
@@ -179,7 +179,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
               {pendingRequests.map(member => {
                 const memberProfile = getProfile(member.user_id);
                 return (
-                  <div key={member.user_id} className="flex items-center justify-between">
+                  <div key={member.user_id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                      <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={memberProfile?.photo_url ?? undefined} />
@@ -190,7 +190,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
                           <p className="text-xs text-muted-foreground">{member.user_id.substring(0, 8)}</p>
                         </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 self-end sm:self-center">
                       <Button size="sm" onClick={() => handleStatusUpdate(member.user_id, 'accepted')}>{t('approve')}</Button>
                       <Button size="sm" variant="ghost" onClick={() => handleStatusUpdate(member.user_id, 'rejected')}>{t('reject')}</Button>
                     </div>
@@ -211,7 +211,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
               {acceptedMembers.map(member => {
                  const memberProfile = getProfile(member.user_id);
                  return (
-                 <div key={member.user_id} className="flex items-center justify-between">
+                 <div key={member.user_id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
                             <AvatarImage src={memberProfile?.photo_url ?? undefined} />
@@ -224,7 +224,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
                     </div>
 
                     {isOwner && member.role !== 'owner' ? (
-                       <div className="flex items-center gap-2">
+                       <div className="flex items-center gap-2 self-end sm:self-center">
                           <Select 
                             value={member.role}
                             onValueChange={(value: 'editor' | 'viewer') => handleRoleUpdate(member.user_id, value)}
@@ -260,7 +260,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
                           </AlertDialog>
                        </div>
                     ) : (
-                      <span className="text-sm font-medium capitalize bg-muted px-2 py-1 rounded-md">{t(member.role)}</span>
+                      <span className="text-sm font-medium capitalize bg-muted px-2 py-1 rounded-md self-end sm:self-center">{t(member.role)}</span>
                     )}
                  </div>
                  )
