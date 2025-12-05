@@ -15,7 +15,14 @@ export const metadata: Metadata = {
   keywords: ['bütçe', 'gider takibi', 'finans', 'para yönetimi', 'harcama paylaşımı', 'budget', 'expense tracker', 'finance', 'money management'],
   manifest: '/manifest.json',
   icons: {
-    icon: '/logo.png',
+    icon: [
+      {
+        url: '/logo.png',
+        href: '/logo.png',
+        type: 'image/png',
+        sizes: '32x32',
+      },
+    ],
     apple: "/logo.png",
   },
 };
