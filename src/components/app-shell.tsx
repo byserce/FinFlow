@@ -24,12 +24,13 @@ function BottomNav() {
     { href: `/budget/${budgetId}/history`, label: 'Geçmiş', icon: History },
     { href: `/budget/${budgetId}/settings`, label: 'Ayarlar', icon: Settings },
   ];
+  
+  const hideOnRoutes = ['/profile'];
 
-  // If we are not in a specific budget, do not show the nav bar.
-  // The main budget page '/' does not need a bottom nav.
+  // If we are not in a specific budget, or on a specific page, do not show the nav bar.
   const itemsToShow = budgetId ? navItems : [];
   
-  if (!user || itemsToShow.length === 0) {
+  if (!user || itemsToShow.length === 0 || hideOnRoutes.includes(pathname)) {
     return null; // Don't show nav if user is not logged in or no items to show
   }
 

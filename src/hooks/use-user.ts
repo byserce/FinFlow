@@ -34,9 +34,14 @@ export function useUser() {
         };
 
         window.addEventListener('storage', handleStorageChange);
+        // Also listen for a custom event
+        const handleProfileUpdate = () => loadUser();
+        window.addEventListener('profile-updated', handleProfileUpdate);
+
 
         return () => {
             window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('profile-updated', handleProfileUpdate);
         };
     }, [loadUser]);
 
@@ -47,5 +52,5 @@ export function useUser() {
         // The component calling logout should handle the redirection.
     }, []);
 
-    return { user, logout, isLoading };
+    return { user, logout, isLoading, loadUser };
 }

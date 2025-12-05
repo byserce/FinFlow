@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatCurrency } from '@/lib/utils';
-import { Plus, Users, User, ArrowRight, LogOut, Trash2, UserPlus, WalletCards, Receipt } from 'lucide-react';
+import { Plus, Users, User, ArrowRight, LogOut, Trash2, UserPlus, WalletCards, Receipt, Settings } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -130,21 +130,28 @@ export default function BudgetsPage() {
       <div className="p-4 md:p-6 space-y-6">
         <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
+                <Link href="/profile" className="flex items-center gap-4 group">
                     <Avatar>
                         <AvatarImage src={user?.photo_url ?? undefined} />
                         <AvatarFallback>{user?.display_name?.charAt(0) ?? 'U'}</AvatarFallback>
                     </Avatar>
                     <div>
-                        <h1 className="text-2xl font-bold">Hoşgeldin, {user?.display_name}</h1>
+                        <h1 className="text-2xl font-bold group-hover:underline">Hoşgeldin, {user?.display_name}</h1>
                         <p className="text-muted-foreground text-sm md:text-base">
                             Tüm bütçelerinizi yönetin
                         </p>
                     </div>
-                </div>
-                 <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout" className="md:hidden">
-                    <LogOut className="h-5 w-5" />
-                </Button>
+                </Link>
+                 <div className="flex items-center md:hidden">
+                    <Link href="/profile">
+                        <Button variant="ghost" size="icon" aria-label="Profile Settings">
+                            <Settings className="h-5 w-5" />
+                        </Button>
+                    </Link>
+                    <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout">
+                        <LogOut className="h-5 w-5" />
+                    </Button>
+                 </div>
             </div>
           <div className='flex items-center gap-2'>
             <Dialog open={isJoinDialogOpen} onOpenChange={setIsJoinDialogOpen}>
@@ -231,9 +238,16 @@ export default function BudgetsPage() {
                     </form>
                 </DialogContent>
             </Dialog>
-            <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout" className="hidden md:inline-flex">
-                <LogOut className="h-5 w-5" />
-            </Button>
+            <div className="hidden md:flex items-center">
+                 <Link href="/profile">
+                    <Button variant="ghost" size="icon" aria-label="Profile Settings">
+                        <Settings className="h-5 w-5" />
+                    </Button>
+                </Link>
+                <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout">
+                    <LogOut className="h-5 w-5" />
+                </Button>
+            </div>
            </div>
         </header>
 

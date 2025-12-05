@@ -332,3 +332,32 @@ export async function removeMember(planId: string, memberId: string) {
 
     return { success: true };
 }
+
+
+export async function updateUserProfile(formData: FormData) {
+    const supabase = createClient();
+    const userId = formData.get('userId') as string;
+    const displayName = formData.get('displayName') as string;
+    const photoURL = formData.get('photoURL') as string;
+
+    if (!userId) {
+        return { error: 'User not authenticated.' };
+    }
+
+    const { data, error } = await supabase
+        .from('budget_profiles')
+        .update({
+            display_name: displayName,
+            photo_url: photoURL
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+    
+    if (error) {
+        console.error('Error updating profile:', error);
+        return { error: 'Failed to update profile.' };
+    }
+    
+    return { success: true, updatedProfile: data };
+}
