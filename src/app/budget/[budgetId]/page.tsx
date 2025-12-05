@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/hooks/use-user';
 import { useBudget } from '@/lib/hooks/use-app-context';
+import React from 'react';
 
 
 interface BudgetDashboardPageProps {
