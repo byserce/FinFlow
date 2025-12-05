@@ -26,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { addTransaction } from '@/app/actions';
 import { useUser } from '@/hooks/use-user';
 import { useRouter } from 'next/navigation';
+import { useAppContext } from '@/lib/hooks/use-app-context';
 
 export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
   const [open, setOpen] = useState(false);
@@ -35,6 +36,7 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
   const { toast } = useToast();
   const { user } = useUser();
   const router = useRouter();
+  const { refetch } = useAppContext();
   
   const handleTypeChange = (newType: 'income' | 'expense') => {
     setType(newType);
@@ -78,6 +80,7 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
             title: 'Başarılı',
             description: 'İşlem başarıyla eklendi.',
         });
+        await refetch();
         setOpen(false);
     }
   }

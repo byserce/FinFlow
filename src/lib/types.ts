@@ -45,4 +45,5 @@ export type AppContextType = {
   transactionsByPlan: { [key: string]: Transaction[] };
   supabase: SupabaseClient<Database>;
   isLoading: boolean;
+  refetch: () => Promise<void>;
 };

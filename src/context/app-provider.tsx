@@ -71,34 +71,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     fetchData();
   }, [fetchData]);
   
-  useEffect(() => {
-    const channel = supabase
-      .channel('public:budget_transactions')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_transactions' },
-        (payload) => {
-          console.log('Change received!', payload);
-          fetchData();
-        }
-      )
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_plans' },
-        (payload) => {
-            console.log('Change received!', payload);
-            fetchData();
-        }
-       )
-       .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_members' },
-        (payload) => {
-            console.log('Change received!', payload);
-            fetchData();
-        }
-       )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [supabase, fetchData]);
-  
   const budgets = useMemo<Budget[]>(() => {
     return plans.map((plan) => {
       const transactions = transactionsByPlan[plan.id] || [];
@@ -120,7 +92,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     transactionsByPlan,
     supabase,
     isLoading,
-  }), [budgets, transactionsByPlan, isLoading, supabase]);
+    refetch: fetchData,
+  }), [budgets, transactionsByPlan, isLoading, supabase, fetchData]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

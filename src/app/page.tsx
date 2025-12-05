@@ -37,7 +37,7 @@ import { useAppContext } from '@/lib/hooks/use-app-context';
 
 export default function BudgetsPage() {
   const { user, logout, isLoading: isUserLoading } = useUser();
-  const { budgets, isLoading: isBudgetsLoading } = useAppContext();
+  const { budgets, isLoading: isBudgetsLoading, refetch } = useAppContext();
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -70,6 +70,7 @@ export default function BudgetsPage() {
             title: 'Başarılı',
             description: 'Yeni bütçe oluşturuldu.',
         });
+        await refetch();
         setIsDialogOpen(false);
     }
   };
@@ -87,6 +88,7 @@ export default function BudgetsPage() {
             title: 'Başarılı',
             description: 'Bütçe silindi.',
         });
+        await refetch();
     }
   }
 

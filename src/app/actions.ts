@@ -44,8 +44,9 @@ export async function createBudget(formData: FormData) {
     }
   }
   
-  revalidatePath('/');
-  redirect(`/budget/${budgetData.id}`);
+  // This redirect will be handled client-side after refetch
+  // revalidatePath('/');
+  // redirect(`/budget/${budgetData.id}`);
 }
 
 export async function deleteBudget(budgetId: string) {
@@ -64,8 +65,6 @@ export async function deleteBudget(budgetId: string) {
             error: 'Bütçe silinemedi. Lütfen tekrar deneyin.'
         }
     }
-
-    revalidatePath('/');
 }
 
 
@@ -100,8 +99,4 @@ export async function addTransaction(formData: FormData) {
             error: 'Could not add the transaction. Please try again.'
         }
     }
-
-    revalidatePath(`/budget/${budgetId}`);
-    revalidatePath(`/budget/${budgetId}/history`);
-    revalidatePath(`/budget/${budgetId}/analytics`);
 }
