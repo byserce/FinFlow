@@ -149,5 +149,6 @@
   "currency": "Currency",
   "selectCurrency": "Select currency",
   "defaultCurrency": "Default Currency",
-  "budgetCurrencyUpdated": "Budget currency updated."
+  "budgetCurrencyUpdated": "Budget currency updated.",
+  "setCurrencyForBudget": "Set the currency for this budget. All financial data will be displayed in this currency."
 }

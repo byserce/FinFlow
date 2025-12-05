@@ -149,5 +149,6 @@
   "currency": "Para Birimi",
   "selectCurrency": "Para birimi seçin",
   "defaultCurrency": "Varsayılan Para Birimi",
-  "budgetCurrencyUpdated": "Bütçe para birimi güncellendi."
+  "budgetCurrencyUpdated": "Bütçe para birimi güncellendi.",
+  "setCurrencyForBudget": "Bu bütçenin para birimini ayarlayın. Tüm finansal veriler bu para biriminde görüntülenecektir."
 }

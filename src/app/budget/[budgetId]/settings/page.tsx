@@ -128,27 +128,6 @@ export default function SettingsPage({ params }: SettingsPageProps) {
         </header>
 
         {isOwner && (
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><DollarSign /> {t('currency')}</CardTitle>
-                    <CardDescription>{t('setCurrencyForBudget')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Select value={budget.currency} onValueChange={handleCurrencyUpdate}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder={t('selectCurrency')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="USD">USD ($)</SelectItem>
-                            <SelectItem value="EUR">EUR (€)</SelectItem>
-                            <SelectItem value="TRY">TRY (₺)</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </CardContent>
-            </Card>
-        )}
-
-        {isOwner && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -167,6 +146,27 @@ export default function SettingsPage({ params }: SettingsPageProps) {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {isOwner && (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><DollarSign /> {t('currency')}</CardTitle>
+                    <CardDescription>{t('setCurrencyForBudget')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Select value={budget.currency} onValueChange={handleCurrencyUpdate}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder={t('selectCurrency')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="USD">USD ($)</SelectItem>
+                            <SelectItem value="EUR">EUR (€)</SelectItem>
+                            <SelectItem value="TRY">TRY (₺)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </CardContent>
+            </Card>
         )}
         
         {isOwner && pendingRequests.length > 0 && (
