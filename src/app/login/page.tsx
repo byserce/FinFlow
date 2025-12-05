@@ -11,7 +11,6 @@ import Image from 'next/image';
 import { FcGoogle } from 'react-icons/fc';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface GoogleJwtPayload {
   email: string;
@@ -69,14 +68,13 @@ function LoginScreen() {
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex h-screen flex-col bg-background p-6 sm:p-8 overflow-hidden overscroll-none touch-none">
-      <ScrollArea className="flex-1">
-        {/* Main content area */}
-        <div className="flex-1 flex flex-col items-center justify-center text-center w-full max-w-md mx-auto min-h-[calc(100vh-120px)] py-8">
+    <div className="flex h-screen w-full items-center justify-center bg-background p-6 sm:p-8">
+        <div className="w-full max-w-sm text-center">
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                className="mb-8"
             >
                 <div className="relative w-24 h-24 xs:w-32 xs:h-32 mb-4 sm:mb-6 mx-auto">
                    <Image 
@@ -87,13 +85,6 @@ function LoginScreen() {
                      priority 
                    />
                 </div>
-            </motion.div>
-            
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-            >
                 <h1 className="text-2xl xs:text-3xl sm:text-4xl font-bold tracking-tighter">
                   {t('welcome')}
                 </h1>
@@ -101,25 +92,22 @@ function LoginScreen() {
                   {t('manageBudgets')}
                 </p>
             </motion.div>
-        </div>
-      </ScrollArea>
 
-        {/* Bottom button area */}
-        <motion.div
-            className="w-full max-w-sm mx-auto pb-safe-area pt-4"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-        >
-            <Button
-                size="lg"
-                className="w-full h-12 xs:h-14 text-base sm:text-lg rounded-2xl bg-white text-gray-800 hover:bg-gray-100 shadow-md transition-transform active:scale-95"
-                onClick={() => googleLogin()}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2, ease: "easeInOut" }}
             >
-                <FcGoogle className="mr-3 h-6 w-6 sm:h-7 sm:w-7" />
-                Sign in with Google
-            </Button>
-        </motion.div>
+                <Button
+                    size="lg"
+                    className="w-full h-12 xs:h-14 text-base sm:text-lg rounded-2xl bg-white text-gray-800 hover:bg-gray-100 shadow-md transition-transform active:scale-95"
+                    onClick={() => googleLogin()}
+                >
+                    <FcGoogle className="mr-3 h-6 w-6 sm:h-7 sm:w-7" />
+                    Sign in with Google
+                </Button>
+            </motion.div>
+        </div>
     </div>
   );
 }
