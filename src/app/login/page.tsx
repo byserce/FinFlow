@@ -66,6 +66,7 @@ function LoginScreen() {
     onError: () => {
       toast({ variant: 'destructive', title: t('error'), description: 'Google login failed. Please try again.' });
     },
+    useOneTap: false,
   });
 
   return (
