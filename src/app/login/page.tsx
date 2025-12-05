@@ -1,58 +1,87 @@
 'use client';
-import { useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
+import { GoogleOAuthProvider, GoogleLogin, CredentialResponse } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
+import { handleGoogleLogin } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { FcGoogle } from 'react-icons/fc';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/use-translation';
+import { useUser } from '@/hooks/use-user';
+import { useEffect } from 'react';
+
+interface GoogleJwtPayload {
+  email: string;
+  name: string;
+  picture: string;
+}
 
 export default function LoginPage() {
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const { toast } = useToast();
   const { t } = useTranslation();
+  const { login, user } = useUser();
 
-  const handleLogin = async () => {
-    setError(null);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${location.origin}/auth/callback`,
-      },
-    });
+  // If user is already logged in, redirect to home
+  useEffect(() => {
+    if (user) {
+      router.push('/');
+    }
+  }, [user, router]);
+  
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
-    if (error) {
-      if (error.message.includes('Unsupported provider')) {
-        setError("Google ile kimlik doğrulama bu projede etkinleştirilmemiş. Lütfen Supabase projenizin 'Authentication > Providers' bölümüne gidip Google'ı etkinleştirin.");
-      } else {
-        setError(`${t('error')}: ${error.message}`);
-      }
+  const handleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential) {
+      toast({ variant: 'destructive', title: t('error'), description: 'Google login failed.' });
+      return;
+    }
+    try {
+      const decoded = jwtDecode<GoogleJwtPayload>(credentialResponse.credential);
+      const userProfile = await handleGoogleLogin(decoded.email, decoded.name, decoded.picture);
+      
+      login(userProfile);
+
+      toast({ title: t('success'), description: t('loginSuccess') });
+      router.push('/');
+    } catch (error) {
+      console.error('Login processing error:', error);
+      toast({ variant: 'destructive', title: t('error'), description: (error as Error).message });
     }
   };
 
-  return (
-    <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-4 items-center">
-      <div className="text-center mb-4">
-        <h1 className="text-3xl font-bold">{t('welcome')}</h1>
-        <p className="text-muted-foreground">{t('manageBudgets')}</p>
+  const handleError = () => {
+    toast({ variant: 'destructive', title: t('error'), description: 'Google login failed. Please try again.' });
+  };
+  
+  if (!googleClientId) {
+    return (
+      <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-4 items-center text-center">
+         <h1 className="text-2xl font-bold text-destructive">Configuration Error</h1>
+         <p className="text-muted-foreground">
+            The Google Client ID is missing. Please set the <code className="bg-muted px-1 py-0.5 rounded-sm">NEXT_PUBLIC_GOOGLE_CLIENT_ID</code> environment variable.
+        </p>
       </div>
+    )
+  }
 
-      {error && (
-        <Alert variant="destructive">
-          <Terminal className="h-4 w-4" />
-          <AlertTitle>Giriş Hatası</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+  return (
+    <GoogleOAuthProvider clientId={googleClientId}>
+        <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-4 items-center">
+        <div className="text-center mb-4">
+            <h1 className="text-3xl font-bold">{t('welcome')}</h1>
+            <p className="text-muted-foreground">{t('manageBudgets')}</p>
+        </div>
 
-      <Button
-        variant="outline"
-        className="w-full h-12 text-lg"
-        onClick={handleLogin}
-      >
-        <FcGoogle className="mr-4 h-6 w-6" />
-        Google ile Giriş Yap
-      </Button>
-    </div>
+        <GoogleLogin
+            onSuccess={handleSuccess}
+            onError={handleError}
+            useOneTap
+            theme="filled_blue"
+            shape="rectangular"
+            width="320px"
+        />
+        </div>
+    </GoogleOAuthProvider>
   );
 }

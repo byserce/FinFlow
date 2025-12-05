@@ -62,6 +62,8 @@ export default function BudgetsPage() {
   const getProfile = (userId: string) => allProfiles.find(p => p.id === userId);
 
   const handleCreateBudgetAction = async (formData: FormData) => {
+    if (!user) return;
+    formData.append('userId', user.id);
     const result = await createBudget(formData);
     
     if (result?.error) {
@@ -81,6 +83,8 @@ export default function BudgetsPage() {
   };
   
   const handleJoinBudgetAction = async (formData: FormData) => {
+    if (!user) return;
+    formData.append('userId', user.id);
     const result = await joinBudgetByCode(formData);
 
     if (result?.error) {
@@ -101,7 +105,8 @@ export default function BudgetsPage() {
 
 
   const handleDeleteBudgetAction = async (budgetId: string) => {
-    const result = await deleteBudget(budgetId);
+    if (!user) return;
+    const result = await deleteBudget(budgetId, user.id);
      if (result?.error) {
          toast({
             variant: 'destructive',

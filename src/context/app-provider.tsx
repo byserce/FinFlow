@@ -3,11 +3,12 @@ import { createContext, useState, useEffect, useCallback, useMemo, type ReactNod
 import { createClient } from '@/lib/supabase/client';
 import type { AppContextType, Budget, Transaction, Plan, Member, Profile, TransactionParticipant, SupabaseUser } from '@/lib/types';
 import { Database } from '@/lib/types';
+import { useUser } from '@/hooks/use-user';
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const { user, isLoading: isUserLoading } = useUser();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [transactionsByPlan, setTransactionsByPlan] = useState<{ [key: string]: Transaction[] }>({});
   const [membersByPlan, setMembersByPlan] = useState<{ [key: string]: Member[] }>({});
@@ -16,15 +17,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const supabase = createClient();
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [supabase]);
-
   const fetchData = useCallback(async () => {
+    if (isUserLoading) return;
     setIsLoading(true);
 
     const { data: profilesData, error: profilesError } = await supabase.from('budget_profiles').select('*');
@@ -94,7 +88,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     setIsLoading(false);
-  }, [user?.id, supabase]);
+  }, [user?.id, supabase, isUserLoading]);
 
   useEffect(() => {
     fetchData();
@@ -122,9 +116,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     transactionParticipants,
     allProfiles,
     supabase,
-    isLoading,
+    isLoading: isLoading || isUserLoading,
     refetch: fetchData,
-  }), [budgets, transactionsByPlan, transactionParticipants, allProfiles, isLoading, supabase, fetchData]);
+  }), [budgets, transactionsByPlan, transactionParticipants, allProfiles, isLoading, supabase, fetchData, isUserLoading]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

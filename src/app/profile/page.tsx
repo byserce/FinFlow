@@ -49,6 +49,7 @@ export default function ProfilePage() {
     setIsSubmitting(true);
 
     const formData = new FormData();
+    formData.append('userId', user.id);
     formData.append('displayName', displayName);
     formData.append('photoURL', selectedAvatar);
     formData.append('default_currency', defaultCurrency);

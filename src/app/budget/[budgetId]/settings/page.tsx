@@ -89,7 +89,8 @@ export default function SettingsPage({ params }: SettingsPageProps) {
   }
 
   const handleCurrencyUpdate = async (currency: string) => {
-    const { error } = await updateBudgetCurrency(budgetId, currency);
+    if (!user) return;
+    const { error } = await updateBudgetCurrency(budgetId, currency, user.id);
     if (error) {
         toast({ variant: 'destructive', title: t('error'), description: error });
     } else {

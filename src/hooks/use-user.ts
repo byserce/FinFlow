@@ -1,65 +1,61 @@
 'use client';
 import { useState, useEffect, useCallback, useContext } from 'react';
-import { AppContext } from '@/context/app-provider';
-import type { Profile, SupabaseUser } from '@/lib/types';
+import type { Profile } from '@/lib/types';
+
+const USER_STORAGE_KEY = 'finflow_active_user';
 
 export function useUser() {
-    const context = useContext(AppContext);
-    if (!context) {
-        throw new Error('useUser must be used within an AppProvider');
-    }
-
-    const { supabase, allProfiles } = context;
-    const [user, setUser] = useState<SupabaseUser | null>(null);
-    const [profile, setProfile] = useState<Profile | null>(null);
+    const [user, setUser] = useState<Profile | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            (event, session) => {
-                const currentUser = session?.user ?? null;
-                setUser(currentUser);
-                
-                if (currentUser) {
-                    const userProfile = allProfiles.find(p => p.id === currentUser.id) || null;
-                    setProfile(userProfile);
-                } else {
-                    setProfile(null);
-                }
-                
-                setIsLoading(false);
+        try {
+            const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+            if (storedUser) {
+                setUser(JSON.parse(storedUser));
             }
-        );
-
-        // Initial check
-        const checkUser = async () => {
-            const { data } = await supabase.auth.getUser();
-            const currentUser = data.user;
-            setUser(currentUser);
-            if (currentUser) {
-                 const userProfile = allProfiles.find(p => p.id === currentUser.id) || null;
-                 setProfile(userProfile);
-            }
+        } catch (error) {
+            console.error("Failed to parse user from localStorage", error);
+            localStorage.removeItem(USER_STORAGE_KEY);
+        } finally {
             setIsLoading(false);
         }
+    }, []);
 
-        checkUser();
+    const login = useCallback((userProfile: Profile) => {
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userProfile));
+        setUser(userProfile);
+    }, []);
 
-        return () => {
-            subscription.unsubscribe();
-        };
-    }, [supabase, allProfiles]);
-
-    const logout = async () => {
-        await supabase.auth.signOut();
+    const logout = useCallback(() => {
+        localStorage.removeItem(USER_STORAGE_KEY);
         setUser(null);
-        setProfile(null);
-    };
+    }, []);
+
+    const refetch = useCallback(() => {
+        setIsLoading(true);
+        try {
+            const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+            if (storedUser) {
+                const latestUser = JSON.parse(storedUser);
+                // In a real app, you might want to fetch latest profile from server here
+                setUser(latestUser);
+            } else {
+                setUser(null);
+            }
+        } catch (error) {
+            console.error("Failed to refetch user from localStorage", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
 
     return { 
-      user: profile, // Return the budget_profiles record as 'user' for app compatibility
-      supabaseUser: user, // Return the actual auth user if needed
+      user,
+      login,
       logout, 
-      isLoading: isLoading || context.isLoading
+      isLoading,
+      refetch,
     };
 }

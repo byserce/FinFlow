@@ -105,6 +105,7 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
 
     const formData = new FormData(event.currentTarget);
     formData.set('budgetId', budgetId);
+    formData.set('author_id', user.id);
     if(payerId) formData.set('payer_id', payerId);
     if (budget?.mode === 'sharing') {
       formData.set('type', 'expense');

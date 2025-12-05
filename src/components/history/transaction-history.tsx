@@ -61,7 +61,7 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
   
   const handleDelete = async (transactionId: string) => {
     if (!user) return;
-    const result = await deleteTransaction(transactionId, budgetId);
+    const result = await deleteTransaction(transactionId, budgetId, user.id);
     if(result.error) {
       toast({ variant: 'destructive', title: t('error'), description: result.error });
     } else {

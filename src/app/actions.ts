@@ -2,18 +2,62 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import type { Profile } from '@/lib/types';
+import { v4 as uuidv4 } from 'uuid';
 
 function generateJoinCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
+
+export async function handleGoogleLogin(email: string, name: string, picture: string): Promise<Profile> {
+  const supabase = createClient();
+  
+  const { data: existingProfile, error: fetchError } = await supabase
+    .from('budget_profiles')
+    .select('*')
+    .eq('email', email)
+    .single();
+
+  if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116: 'exact-one' violation (i.e. no rows found)
+    console.error('Error fetching profile:', fetchError);
+    throw new Error('Could not process login.');
+  }
+  
+  if (existingProfile) {
+    return existingProfile;
+  }
+
+  // Create new profile
+  const newProfileId = uuidv4();
+  const { data: newProfile, error: insertError } = await supabase
+    .from('budget_profiles')
+    .insert({
+      id: newProfileId,
+      email: email,
+      display_name: name,
+      photo_url: picture,
+      default_currency: 'USD'
+    })
+    .select()
+    .single();
+
+  if (insertError) {
+    console.error('Error creating profile:', insertError);
+    throw new Error('Could not create a new user profile.');
+  }
+
+  return newProfile;
+}
+
 export async function createBudget(formData: FormData) {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: 'Authentication error: User is not logged in.' };
+  const userId = formData.get('userId') as string;
+
+  if (!userId) return { error: 'Authentication error: User is not logged in.' };
 
   const name = formData.get('name') as string;
-  const ownerId = user.id;
+  const ownerId = userId;
   const mode = formData.get('mode') as 'tracking' | 'sharing';
   const currency = formData.get('currency') as string;
   
@@ -41,11 +85,10 @@ export async function createBudget(formData: FormData) {
   }
 }
 
-export async function deleteBudget(budgetId: string) {
+export async function deleteBudget(budgetId: string, userId: string) {
     const supabase = createClient();
     
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: 'Authentication error: User is not logged in.' };
+    if (!userId) return { error: 'Authentication error: User is not logged in.' };
     
     // Security check: Only the owner can delete a budget
     const { data: plan, error: planFetchError } = await supabase
@@ -55,7 +98,7 @@ export async function deleteBudget(budgetId: string) {
         .single();
     
     if (planFetchError || !plan) return { error: 'Budget not found or you do not have permission to delete it.' };
-    if (plan.owner_id !== user.id) return { error: 'Only the budget owner can delete the budget.' };
+    if (plan.owner_id !== userId) return { error: 'Only the budget owner can delete the budget.' };
 
     const { error: membersError } = await supabase
         .from('budget_members')
@@ -91,11 +134,10 @@ export async function deleteBudget(budgetId: string) {
 
 export async function addTransaction(formData: FormData) {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: 'Authentication error: User is not logged in.' };
+    const authorId = formData.get('author_id') as string;
+    if (!authorId) return { error: 'Authentication error: User is not logged in.' };
 
     const budgetId = formData.get('budgetId') as string;
-    const authorId = user.id;
     const payerId = formData.get('payer_id') as string | null;
     const participantIds = formData.getAll('participant_ids') as string[];
 
@@ -151,16 +193,15 @@ export async function addTransaction(formData: FormData) {
     }
 }
 
-export async function deleteTransaction(transactionId: string, budgetId: string) {
+export async function deleteTransaction(transactionId: string, budgetId: string, userId: string) {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: 'You must be logged in to delete transactions.' };
+    if (!userId) return { error: 'You must be logged in to delete transactions.' };
 
     const { data: member, error: memberError } = await supabase
         .from('budget_members')
         .select('role')
         .eq('plan_id', budgetId)
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .eq('status', 'accepted')
         .single();
     
@@ -195,11 +236,11 @@ export async function deleteTransaction(transactionId: string, budgetId: string)
 
 export async function joinBudgetByCode(formData: FormData) {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: 'Authentication error: User is not logged in.' };
+    
+    const userId = formData.get('userId') as string;
+    if (!userId) return { error: 'Authentication error: User is not logged in.' };
 
     const joinCode = formData.get('join_code') as string;
-    const userId = user.id;
 
     if (!joinCode) return { error: 'Join code is required.' };
 
@@ -302,8 +343,8 @@ export async function removeMember(planId: string, memberId: string) {
 
 export async function updateUserProfile(formData: FormData) {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: 'User not authenticated.' };
+    const userId = formData.get('userId') as string;
+    if (!userId) return { error: 'User not authenticated.' };
 
     const displayName = formData.get('displayName') as string;
     const photoURL = formData.get('photoURL') as string;
@@ -316,7 +357,7 @@ export async function updateUserProfile(formData: FormData) {
             photo_url: photoURL,
             default_currency: defaultCurrency
         })
-        .eq('id', user.id)
+        .eq('id', userId)
         .select()
         .single();
     
@@ -328,17 +369,16 @@ export async function updateUserProfile(formData: FormData) {
     return { success: true, updatedProfile: data };
 }
 
-export async function updateBudgetCurrency(budgetId: string, currency: string) {
+export async function updateBudgetCurrency(budgetId: string, currency: string, userId: string) {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: 'User not authenticated.' };
+    if (!userId) return { error: 'User not authenticated.' };
     
     // Security Check
     const { data: member } = await supabase
         .from('budget_members')
         .select('role')
         .eq('plan_id', budgetId)
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .eq('status', 'accepted')
         .single();
 

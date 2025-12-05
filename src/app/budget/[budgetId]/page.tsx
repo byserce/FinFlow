@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { BalanceCard } from '@/components/dashboard/balance-card';
 import { QuickStats } from '@/components/dashboard/quick-stats';
 import { RecentTransactions } from '@/components/dashboard/recent-transactions';
-import { AddTransactionSheet } from '@/components/add-transaction-sheet';
+import { AddTransactionSheet } from '@/app/add-transaction-sheet';
 import { PageTransition } from '@/components/page-transition';
 import { User, ArrowLeft, Wallet, Users, Receipt } from 'lucide-react';
 import Link from 'next/link';
