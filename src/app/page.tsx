@@ -332,7 +332,7 @@ export default function BudgetsPage() {
                          {user.id === budget.owner_id && (
                              <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity ml-2 h-8 w-8">
+                                    <Button variant="ghost" size="icon" className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity ml-2 h-8 w-8"  onClick={(e) => e.stopPropagation()}>
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </AlertDialogTrigger>

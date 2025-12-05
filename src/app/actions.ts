@@ -364,3 +364,19 @@ export async function updateUserProfile(formData: FormData) {
     
     return { success: true, updatedProfile: data };
 }
+
+export async function updateBudgetCurrency(budgetId: string, currency: string) {
+    const supabase = createClient();
+
+    const { error } = await supabase
+        .from('budget_plans')
+        .update({ currency })
+        .eq('id', budgetId);
+
+    if (error) {
+        console.error('Error updating budget currency:', error);
+        return { error: 'Failed to update budget currency.' };
+    }
+    
+    return { success: true };
+}

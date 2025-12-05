@@ -5,7 +5,7 @@ import { useUser } from "@/hooks/use-user";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, UserPlus, Users, Trash2 } from "lucide-react";
+import { Copy, Check, UserPlus, Users, Trash2, DollarSign } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { updateMemberStatus, updateMemberRole, removeMember } from "@/app/actions";
+import { updateMemberStatus, updateMemberRole, removeMember, updateBudgetCurrency } from "@/app/actions";
 import { useAppContext } from "@/lib/hooks/use-app-context";
 import type { Profile } from "@/lib/types";
 import { useTranslation } from "@/hooks/use-translation";
@@ -88,6 +88,16 @@ export default function SettingsPage({ params }: SettingsPageProps) {
     }
   }
 
+  const handleCurrencyUpdate = async (currency: string) => {
+    const { error } = await updateBudgetCurrency(budgetId, currency);
+    if (error) {
+        toast({ variant: 'destructive', title: t('error'), description: error });
+    } else {
+        toast({ title: t('success'), description: "Budget currency updated." });
+        await refetch();
+    }
+  }
+
   if (isLoading || !budget) {
     return (
       <PageTransition>
@@ -116,6 +126,27 @@ export default function SettingsPage({ params }: SettingsPageProps) {
           <h1 className="text-3xl font-bold">{t('budgetSettings')}</h1>
           <p className="text-muted-foreground">{budget.name}</p>
         </header>
+
+        {isOwner && (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><DollarSign /> Currency</CardTitle>
+                    <CardDescription>Set the currency for this budget.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Select value={budget.currency} onValueChange={handleCurrencyUpdate}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select currency" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="USD">USD ($)</SelectItem>
+                            <SelectItem value="EUR">EUR (€)</SelectItem>
+                            <SelectItem value="TRY">TRY (₺)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </CardContent>
+            </Card>
+        )}
 
         {isOwner && (
           <Card>
