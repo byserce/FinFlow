@@ -126,23 +126,28 @@ export default function BudgetsPage() {
   return (
     <PageTransition>
       <div className="p-4 md:p-6 space-y-6">
-        <header className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-             <Avatar>
-                <AvatarImage src={user?.photo_url ?? undefined} />
-                <AvatarFallback>{user?.display_name?.charAt(0) ?? 'U'}</AvatarFallback>
-            </Avatar>
-            <div>
-              <h1 className="text-2xl font-bold">Hoşgeldin, {user?.display_name}</h1>
-              <p className="text-muted-foreground">
-                Tüm bütçelerinizi yönetin
-              </p>
+        <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <Avatar>
+                        <AvatarImage src={user?.photo_url ?? undefined} />
+                        <AvatarFallback>{user?.display_name?.charAt(0) ?? 'U'}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <h1 className="text-2xl font-bold">Hoşgeldin, {user?.display_name}</h1>
+                        <p className="text-muted-foreground text-sm md:text-base">
+                            Tüm bütçelerinizi yönetin
+                        </p>
+                    </div>
+                </div>
+                 <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout" className="md:hidden">
+                    <LogOut className="h-5 w-5" />
+                </Button>
             </div>
-          </div>
           <div className='flex items-center gap-2'>
             <Dialog open={isJoinDialogOpen} onOpenChange={setIsJoinDialogOpen}>
               <DialogTrigger asChild>
-                 <Button variant="outline">
+                 <Button variant="outline" className="w-full md:w-auto">
                     <UserPlus className="mr-2 h-4 w-4" /> Bütçeye Katıl
                 </Button>
               </DialogTrigger>
@@ -171,7 +176,7 @@ export default function BudgetsPage() {
 
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
-                <Button>
+                <Button className="w-full md:w-auto">
                     <Plus className="mr-2 h-4 w-4" /> Yeni Bütçe
                 </Button>
                 </DialogTrigger>
@@ -197,7 +202,7 @@ export default function BudgetsPage() {
                     </form>
                 </DialogContent>
             </Dialog>
-            <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout">
+            <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout" className="hidden md:inline-flex">
                 <LogOut className="h-5 w-5" />
             </Button>
            </div>
