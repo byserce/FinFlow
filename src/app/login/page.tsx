@@ -1,4 +1,5 @@
 'use client';
+
 import { useRouter } from 'next/navigation';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import { handleGoogleLogin } from '@/app/actions';
@@ -67,39 +68,59 @@ function LoginScreen() {
   });
 
   return (
-    <div className="flex h-screen flex-col bg-background p-8 overflow-hidden">
-        {/* Main content area that fills available space */}
-        <div className="flex-1 flex flex-col items-center justify-center text-center">
+    // DÜZELTME 1: 'fixed inset-0' ile sayfayı ekrana çiviliyoruz.
+    // 'z-50' ile en üstte durmasını sağlıyoruz.
+    // 'bg-background' ile arka plan rengini garantiye alıyoruz.
+    <div className="fixed inset-0 z-50 flex flex-col bg-background p-6 sm:p-8 overflow-hidden overscroll-none touch-none">
+        
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col items-center justify-center text-center w-full max-w-md mx-auto">
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
             >
-                <Image src="/logo.png" alt="FinFlow Logo" width={128} height={128} className="mx-auto mb-6 rounded-3xl shadow-lg" />
+                {/* DÜZELTME 2: Logo boyutunu küçülttük (w-24), büyük ekranda büyüsün (sm:w-32) */}
+                <div className="relative w-24 h-24 sm:w-32 sm:h-32 mb-4 sm:mb-6 mx-auto">
+                   <Image 
+                     src="/logo.png" 
+                     alt="FinFlow Logo" 
+                     fill
+                     className="object-cover rounded-3xl shadow-lg"
+                     priority 
+                   />
+                </div>
             </motion.div>
+            
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
             >
-                <h1 className="text-4xl font-bold tracking-tighter">{t('welcome')}</h1>
-                <p className="text-muted-foreground mt-2 text-lg">{t('manageBudgets')}</p>
+                {/* DÜZELTME 3: Yazı boyutlarını responsive yaptık */}
+                <h1 className="text-2xl sm:text-4xl font-bold tracking-tighter">
+                  {t('welcome')}
+                </h1>
+                <p className="text-muted-foreground mt-2 text-sm sm:text-lg px-4">
+                  {t('manageBudgets')}
+                </p>
             </motion.div>
         </div>
 
         {/* Bottom button area */}
         <motion.div
-            className="w-full max-w-sm mx-auto"
+            className="w-full max-w-sm mx-auto pb-safe-area" // iPhone alt çubuğu için güvenli alan
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
         >
             <Button
                 size="lg"
-                className="w-full h-14 text-lg rounded-2xl bg-white text-gray-800 hover:bg-gray-100 shadow-md"
+                // DÜZELTME 4: Buton yüksekliğini mobilde biraz kıstık (h-12 -> sm:h-14)
+                className="w-full h-12 sm:h-14 text-base sm:text-lg rounded-2xl bg-white text-gray-800 hover:bg-gray-100 shadow-md transition-transform active:scale-95"
                 onClick={() => googleLogin()}
             >
-                <FcGoogle className="mr-4 h-7 w-7" />
+                <FcGoogle className="mr-3 h-6 w-6 sm:h-7 sm:w-7" />
                 Sign in with Google
             </Button>
         </motion.div>
@@ -107,16 +128,15 @@ function LoginScreen() {
   );
 }
 
-
 export default function LoginPage() {
-  const { t } = useTranslation();
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
   if (!googleClientId) {
     return (
-      <div className="flex-1 flex flex-col w-full h-screen px-8 sm:max-w-md justify-center gap-4 items-center text-center">
-         <h1 className="text-2xl font-bold text-destructive">Configuration Error</h1>
-         <p className="text-muted-foreground">
+      // Hata ekranı için de aynı 'fixed' yapısını kullanıyoruz
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-8 text-center bg-background">
+         <h1 className="text-xl sm:text-2xl font-bold text-destructive mb-2">Configuration Error</h1>
+         <p className="text-muted-foreground text-sm">
             The Google Client ID is missing. Please set the <code className="bg-muted px-1 py-0.5 rounded-sm">NEXT_PUBLIC_GOOGLE_CLIENT_ID</code> environment variable.
         </p>
       </div>
