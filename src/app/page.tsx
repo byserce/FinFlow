@@ -39,7 +39,7 @@ import { Label } from '@/components/ui/label';
 
 export default function BudgetsPage() {
   const { user, logout, isLoading: isUserLoading } = useUser();
-  const { budgets, isLoading: isBudgetsLoading, refetch } = useAppContext();
+  const { budgets, allProfiles, isLoading: isBudgetsLoading, refetch } = useAppContext();
   const router = useRouter();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false);
@@ -54,6 +54,8 @@ export default function BudgetsPage() {
   if (isUserLoading || !user) {
     return <div className="flex items-center justify-center h-screen">Yükleniyor...</div>;
   }
+  
+  const getProfile = (userId: string) => allProfiles.find(p => p.id === userId);
 
   const handleCreateBudgetAction = async (formData: FormData) => {
     if (user) {
@@ -257,26 +259,62 @@ export default function BudgetsPage() {
                 <p className="text-muted-foreground">Bütçeler yükleniyor...</p>
              </div>
           ) : budgets.length > 0 ? (
-            budgets.map((budget) => (
+            budgets.map((budget) => {
+              const acceptedMembers = budget.members.filter(m => m.status === 'accepted');
+              
+              const getIcon = () => {
+                if (budget.mode === 'sharing') return <Receipt className="mr-2 text-primary" />;
+                if (acceptedMembers.length > 1) return <Users className="mr-2 text-primary" />;
+                return <User className="mr-2 text-primary" />;
+              };
+
+              return (
               <Card key={budget.id} className="rounded-2xl shadow-sm hover:shadow-md transition-shadow group">
-                <CardHeader>
-                    <CardTitle className="flex justify-between items-center">
-                    <Link href={`/budget/${budget.id}`} className="flex items-center flex-grow">
-                        {budget.members && budget.members.length > 1 ? (
-                        <Users className="mr-2 text-primary" />
-                        ) : (
-                        <User className="mr-2 text-primary" />
+                 <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <Link href={`/budget/${budget.id}`} className="flex-grow">
+                        <CardTitle className="flex items-center">
+                            {getIcon()}
+                            {budget.name}
+                        </CardTitle>
+                      </Link>
+                      <div className="flex items-center -space-x-2">
+                        {acceptedMembers.slice(0, 3).map(member => {
+                          const profile = getProfile(member.user_id);
+                          return (
+                            <Avatar key={member.user_id} className="h-6 w-6 border-2 border-background">
+                              <AvatarImage src={profile?.photo_url ?? undefined} />
+                              <AvatarFallback>{profile?.display_name?.charAt(0) ?? '?'}</AvatarFallback>
+                            </Avatar>
+                          )
+                        })}
+                        {acceptedMembers.length > 3 && (
+                          <Avatar className="h-6 w-6 border-2 border-background">
+                            <AvatarFallback className="text-xs">+{acceptedMembers.length - 3}</AvatarFallback>
+                          </Avatar>
                         )}
-                        {budget.name}
-                    </Link>
-                    <div className='flex items-center'>
-                         <Link href={`/budget/${budget.id}`} className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      </div>
+                    </div>
+                  </CardHeader>
+                <Link href={`/budget/${budget.id}`} className="block">
+                  <CardContent>
+                    <div className="flex justify-between items-end">
+                      <div>
+                        <div className="text-2xl font-bold">
+                          {formatCurrency(budget.balance)}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {budget.transactions.length} işlem
+                        </p>
+                      </div>
+                       <div className='flex items-center'>
+                         <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                             <ArrowRight className="text-muted-foreground" />
-                        </Link>
+                        </div>
                          {user.id === budget.owner_id && (
                              <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity ml-2">
+                                    <Button variant="ghost" size="icon" className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity ml-2 h-8 w-8">
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </AlertDialogTrigger>
@@ -296,21 +334,12 @@ export default function BudgetsPage() {
                                 </AlertDialogContent>
                             </AlertDialog>
                          )}
+                      </div>
                     </div>
-                    </CardTitle>
-                  </CardHeader>
-                <Link href={`/budget/${budget.id}`} className="block">
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {formatCurrency(budget.balance)}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {budget.transactions.length} işlem
-                    </p>
                   </CardContent>
                 </Link>
               </Card>
-            ))
+            )})
           ) : (
             <div className="text-center py-10">
               <p className="text-muted-foreground">

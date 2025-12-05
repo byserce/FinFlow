@@ -56,6 +56,12 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
   
   const acceptedMembers = budget.members.filter(m => m.status === 'accepted');
   const isSharingMode = budget.mode === 'sharing';
+  
+  const getIcon = () => {
+    if (budget.mode === 'sharing') return <Receipt className="w-4 h-4 mr-2" />;
+    if (acceptedMembers.length > 1) return <Users className="w-4 h-4 mr-2" />;
+    return <User className="w-4 h-4 mr-2" />;
+  }
 
   return (
     <PageTransition>
@@ -69,7 +75,7 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
             </Link>
             <div>
               <p className="text-sm text-muted-foreground flex items-center">
-                {isSharingMode ? <Receipt className="w-4 h-4 mr-2" /> : (acceptedMembers.length > 1 ? <Users className="w-4 h-4 mr-2" /> : <User className="w-4 h-4 mr-2" />)}
+                 {getIcon()}
                 {budget.name}
               </p>
               <h1 className="text-2xl font-bold text-foreground">
