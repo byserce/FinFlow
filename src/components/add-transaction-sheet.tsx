@@ -16,27 +16,46 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Plus, Calendar as CalendarIcon } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus, Calendar as CalendarIcon, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, CATEGORY_INFO } from '@/lib/constants';
-import type { Category } from '@/lib/types';
+import type { Category, Profile, Member } from '@/lib/types';
 import { ScrollArea } from './ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { addTransaction } from '@/app/actions';
 import { useUser } from '@/hooks/use-user';
-import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/lib/hooks/use-app-context';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
-export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
+
+interface AddTransactionSheetProps {
+    budgetId: string;
+    members: Member[];
+}
+
+
+export function AddTransactionSheet({ budgetId, members }: AddTransactionSheetProps) {
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [category, setCategory] = useState<Category | null>(null);
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [payerId, setPayerId] = useState<string>('common');
+
   const { toast } = useToast();
   const { user } = useUser();
-  const router = useRouter();
-  const { refetch } = useAppContext();
+  const { refetch, allProfiles } = useAppContext();
+  
+  const getProfile = (userId: string): Profile | undefined => {
+    return allProfiles.find(p => p.id === userId);
+  }
   
   const handleTypeChange = (newType: 'income' | 'expense') => {
     setType(newType);
@@ -66,6 +85,7 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
     const formData = new FormData(event.currentTarget);
     formData.set('budgetId', budgetId);
     formData.set('author_id', user.id);
+    formData.set('payer_id', payerId);
     
     const result = await addTransaction(formData);
 
@@ -86,6 +106,7 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
   }
 
   const categoriesToShow = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const acceptedMembers = members.filter(m => m.status === 'accepted');
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -176,6 +197,39 @@ export function AddTransactionSheet({ budgetId }: { budgetId: string }) {
                   })}
                 </div>
               </div>
+
+             <div className="space-y-2">
+                <h3 className="text-sm font-medium text-muted-foreground">İşlemi Yapan</h3>
+                <Select value={payerId} onValueChange={setPayerId}>
+                    <SelectTrigger className="h-12 rounded-xl">
+                        <SelectValue placeholder="İşlemi yapanı seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="common">
+                           <div className="flex items-center gap-3">
+                                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-muted">
+                                    <Users className="h-4 w-4 text-muted-foreground" />
+                                </div>
+                                <span>Ortak Harcama</span>
+                           </div>
+                        </SelectItem>
+                        {acceptedMembers.map(member => {
+                            const profile = getProfile(member.user_id);
+                            return (
+                                <SelectItem key={member.user_id} value={member.user_id}>
+                                    <div className="flex items-center gap-3">
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarImage src={profile?.photo_url ?? undefined} />
+                                            <AvatarFallback>{profile?.display_name?.charAt(0) ?? '?'}</AvatarFallback>
+                                        </Avatar>
+                                        <span>{profile?.display_name ?? 'Bilinmeyen'}</span>
+                                    </div>
+                                </SelectItem>
+                            )
+                        })}
+                    </SelectContent>
+                </Select>
+             </div>
 
               {/* Date and Note */}
               <div className="grid grid-cols-2 gap-4">

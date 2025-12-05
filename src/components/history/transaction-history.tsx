@@ -5,17 +5,23 @@ import { Card, CardContent } from '@/components/ui/card';
 import { format, isToday, isYesterday, parseISO } from 'date-fns';
 import { CategoryIcon } from '@/components/transactions/category-icon';
 import { formatCurrency } from '@/lib/utils';
-import { Search } from 'lucide-react';
-import type { Transaction } from '@/lib/types';
+import { Search, Users } from 'lucide-react';
+import type { Transaction, Profile } from '@/lib/types';
 import { CATEGORY_INFO } from '@/lib/constants';
-import { useBudget } from '@/lib/hooks/use-app-context';
+import { useBudget, useAppContext } from '@/lib/hooks/use-app-context';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
 
 
 export function TransactionHistory({ budgetId }: { budgetId: string }) {
   const { budget, isLoading } = useBudget(budgetId);
+  const { allProfiles } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
   
   const transactions = budget?.transactions || [];
+
+  const getProfile = (userId: string): Profile | undefined => {
+    return allProfiles.find(p => p.id === userId);
+  }
 
   const filteredTransactions = useMemo(() => {
     if (!searchTerm) return transactions;
@@ -71,21 +77,31 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
               <h3 className="text-sm font-semibold text-muted-foreground mb-2">{day}</h3>
               <Card className="rounded-2xl shadow-sm">
                 <CardContent className="p-4 space-y-4">
-                  {txs.map((tx) => (
+                  {txs.map((tx) => {
+                    const payerProfile = tx.payer_id ? getProfile(tx.payer_id) : null;
+                    return (
                     <div key={tx.id} className="flex items-center">
                       <CategoryIcon category={tx.category} />
-                      <div className="ml-4 flex-1">
-                        <p className="text-sm font-medium leading-none">{tx.note || CATEGORY_INFO[tx.category]?.label}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {format(parseISO(tx.date), 'h:mm a')}
-                        </p>
-                      </div>
+                       <div className="ml-4 flex-1">
+                          <p className="text-sm font-medium leading-none">{tx.note || CATEGORY_INFO[tx.category]?.label}</p>
+                          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                            {payerProfile ? (
+                              <Avatar className="h-4 w-4">
+                                <AvatarImage src={payerProfile.photo_url ?? undefined} />
+                                <AvatarFallback>{payerProfile.display_name?.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                            ) : (
+                              <Users className="h-4 w-4" />
+                            )}
+                            <span>{format(parseISO(tx.date), 'h:mm a')}</span>
+                          </div>
+                        </div>
                       <div className={`font-medium ${tx.type === 'income' ? 'text-green-500' : 'text-foreground'}`}>
                          {tx.type === 'income' ? '+' : '-'}
                          {formatCurrency(tx.amount)}
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </CardContent>
               </Card>
             </div>

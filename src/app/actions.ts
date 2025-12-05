@@ -94,6 +94,7 @@ export async function addTransaction(formData: FormData) {
     const supabase = createClient();
     const budgetId = formData.get('budgetId') as string;
     const authorId = formData.get('author_id') as string;
+    const payerId = formData.get('payer_id') as string | null;
 
     if (!authorId) {
         return {
@@ -122,6 +123,7 @@ export async function addTransaction(formData: FormData) {
     const transactionData = {
         plan_id: budgetId,
         author_id: authorId,
+        payer_id: payerId === 'common' ? null : payerId,
         amount: parseFloat(formData.get('amount') as string),
         type: formData.get('type') as 'income' | 'expense',
         category: formData.get('category') as string,

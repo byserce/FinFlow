@@ -37,6 +37,7 @@ export type Database = {
           id: string
           plan_id: string
           author_id: string
+          payer_id: string | null
           amount: number
           type: "income" | "expense"
           category: string
@@ -48,6 +49,7 @@ export type Database = {
           id?: string
           plan_id: string
           author_id: string
+          payer_id?: string | null
           amount: number
           type: "income" | "expense"
           category: string
@@ -59,6 +61,7 @@ export type Database = {
           id?: string
           plan_id?: string
           author_id?: string
+          payer_id?: string | null
           amount?: number
           type?: "income" | "expense"
           category?: string
