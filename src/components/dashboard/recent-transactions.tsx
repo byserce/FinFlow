@@ -8,7 +8,7 @@ import { CATEGORY_INFO } from '@/lib/constants';
 import type { Budget, Profile } from '@/lib/types';
 import { useMemo } from 'react';
 import { useAppContext } from '@/lib/hooks/use-app-context';
-import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Users } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 

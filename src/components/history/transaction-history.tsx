@@ -11,7 +11,7 @@ import type { Transaction, Profile } from '@/lib/types';
 import { CATEGORY_INFO } from '@/lib/constants';
 import { useBudget, useAppContext } from '@/lib/hooks/use-app-context';
 import { useUser } from '@/hooks/use-user';
-import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   AlertDialog,
   AlertDialogAction,

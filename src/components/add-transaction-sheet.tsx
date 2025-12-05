@@ -28,14 +28,14 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, CATEGORY_INFO } from '@/lib/constants';
 import type { Category, Profile, Member, Budget } from '@/lib/types';
-import { ScrollArea } from './ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { addTransaction } from '@/app/actions';
 import { useUser } from '@/hooks/use-user';
 import { useAppContext, useBudget } from '@/lib/hooks/use-app-context';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Checkbox } from './ui/checkbox';
-import { Label } from './ui/label';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { useTranslation } from '@/hooks/use-translation';
 
 interface AddTransactionSheetProps {
@@ -337,5 +337,3 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
     </Sheet>
   );
 }
-
-    
