@@ -3,8 +3,6 @@ import { useRouter } from 'next/navigation';
 import { GoogleOAuthProvider, GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import { handleGoogleLogin } from '@/app/actions';
-import { Button } from '@/components/ui/button';
-import { FcGoogle } from 'react-icons/fc';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/use-translation';
 import { useUser } from '@/hooks/use-user';
@@ -76,7 +74,7 @@ export default function LoginPage() {
         <GoogleLogin
             onSuccess={handleSuccess}
             onError={handleError}
-            useOneTap
+            useOneTap={false}
             theme="filled_blue"
             shape="rectangular"
             width="320px"
