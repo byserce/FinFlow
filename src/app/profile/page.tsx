@@ -15,11 +15,14 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslation } from '@/hooks/use-translation';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function ProfilePage() {
   const { user, isLoading, loadUser } = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const { t, language, setLanguage } = useTranslation();
 
   const [displayName, setDisplayName] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState('');
@@ -53,7 +56,7 @@ export default function ProfilePage() {
     if (result.error) {
       toast({
         variant: 'destructive',
-        title: 'Hata',
+        title: t('error'),
         description: result.error,
       });
     } else {
@@ -64,8 +67,8 @@ export default function ProfilePage() {
       await loadUser();
 
       toast({
-        title: 'Başarılı',
-        description: 'Profiliniz başarıyla güncellendi.',
+        title: t('success'),
+        description: t('updateSuccess'),
       });
       router.push('/');
     }
@@ -74,7 +77,7 @@ export default function ProfilePage() {
   };
   
   if (isLoading || !user) {
-    return <div className="flex items-center justify-center h-screen">Yükleniyor...</div>;
+    return <div className="flex items-center justify-center h-screen">{t('loading')}...</div>;
   }
 
   return (
@@ -82,13 +85,13 @@ export default function ProfilePage() {
       <div className="p-4 md:p-6 space-y-6 max-w-2xl mx-auto">
         <header className="flex items-center gap-4">
              <Link href="/" passHref>
-              <Button variant="outline" size="icon" aria-label="Geri">
+              <Button variant="outline" size="icon" aria-label={t('goBack')}>
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             </Link>
             <div>
-                 <h1 className="text-3xl font-bold">Profil Ayarları</h1>
-                <p className="text-muted-foreground">Adınızı ve profil resminizi güncelleyin.</p>
+                 <h1 className="text-3xl font-bold">{t('profileSettings')}</h1>
+                <p className="text-muted-foreground">{t('updateProfileDescription')}</p>
             </div>
         </header>
 
@@ -105,7 +108,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="displayName">Kullanıcı Adı</Label>
+                <Label htmlFor="displayName">{t('displayNameLabel')}</Label>
                 <Input
                   id="displayName"
                   name="displayName"
@@ -114,9 +117,22 @@ export default function ProfilePage() {
                   required
                 />
               </div>
+              
+              <div className="space-y-2">
+                <Label>{t('language')}</Label>
+                <Select value={language} onValueChange={(value) => setLanguage(value as 'tr' | 'en')}>
+                    <SelectTrigger>
+                        <SelectValue placeholder={t('language')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="tr">{t('turkish')}</SelectItem>
+                        <SelectItem value="en">{t('english')}</SelectItem>
+                    </SelectContent>
+                </Select>
+              </div>
 
               <div className="space-y-2">
-                <Label>Profil Resmi Seç</Label>
+                <Label>{t('selectProfilePicture')}</Label>
                 <div className="grid grid-cols-5 md:grid-cols-6 gap-2">
                   {avatarOptions.map((avatarUrl) => (
                     <button
@@ -138,7 +154,7 @@ export default function ProfilePage() {
               </div>
               
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+                {isSubmitting ? t('saving') : t('saveChanges')}
               </Button>
 
             </CardContent>
@@ -148,3 +164,5 @@ export default function ProfilePage() {
     </PageTransition>
   );
 }
+
+    

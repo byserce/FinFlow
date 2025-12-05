@@ -5,6 +5,7 @@ import type { Transaction, Member, Profile } from '@/lib/types';
 import { useMemo } from 'react';
 import { formatCurrency } from '@/lib/utils';
 import { useAppContext } from '@/lib/hooks/use-app-context';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface MemberAnalysisChartProps {
   transactions: Transaction[];
@@ -14,6 +15,7 @@ interface MemberAnalysisChartProps {
 
 export function MemberAnalysisChart({ transactions, members, mode }: MemberAnalysisChartProps) {
   const { allProfiles } = useAppContext();
+  const { t } = useTranslation();
   
   const getProfile = (userId: string): Profile | undefined => {
     return allProfiles.find(p => p.id === userId);
@@ -35,7 +37,7 @@ export function MemberAnalysisChart({ transactions, members, mode }: MemberAnaly
     });
 
     if (mode === 'tracking') {
-       analysis['common'] = { name: 'Ortak', income: 0, expense: 0 };
+       analysis['common'] = { name: t('commonExpense'), income: 0, expense: 0 };
     }
     
     transactions.forEach(tx => {
@@ -63,18 +65,18 @@ export function MemberAnalysisChart({ transactions, members, mode }: MemberAnaly
     
     return Object.values(analysis).filter(d => d.income > 0 || d.expense > 0);
 
-  }, [transactions, members, allProfiles, mode]);
+  }, [transactions, members, allProfiles, mode, t]);
   
   const isSharingMode = mode === 'sharing';
 
   return (
     <Card className="rounded-2xl shadow-sm">
       <CardHeader>
-        <CardTitle>{isSharingMode ? 'Kim Ne Kadar Ödedi?' : 'Üye Katkıları'}</CardTitle>
+        <CardTitle>{isSharingMode ? t('whoPaidHowMuch') : t('memberContributions')}</CardTitle>
         <CardDescription>
             {isSharingMode 
-                ? 'Her üyenin yaptığı toplam ödeme miktarı.'
-                : 'Her üyenin gelir ve giderlere olan katkısı.'
+                ? t('whoPaidDescription')
+                : t('contributionDescription')
             }
         </CardDescription>
       </CardHeader>
@@ -96,17 +98,19 @@ export function MemberAnalysisChart({ transactions, members, mode }: MemberAnaly
                   cursor={{ fill: 'hsl(var(--muted))' }}
                 />
                 <Legend iconType="circle" />
-                {!isSharingMode && <Bar dataKey="income" fill="hsl(var(--chart-1))" name="Gelir" radius={[4, 4, 0, 0]} />}
-                <Bar dataKey="expense" fill={isSharingMode ? "hsl(var(--primary))" : "hsl(var(--chart-2))"} name={isSharingMode ? "Ödenen Tutar" : "Gider"} radius={[4, 4, 0, 0]}/>
+                {!isSharingMode && <Bar dataKey="income" fill="hsl(var(--chart-1))" name={t('income')} radius={[4, 4, 0, 0]} />}
+                <Bar dataKey="expense" fill={isSharingMode ? "hsl(var(--primary))" : "hsl(var(--chart-2))"} name={isSharingMode ? t('expense') : t('expense')} radius={[4, 4, 0, 0]}/>
               </BarChart>
             </ResponsiveContainer>
           </div>
         ) : (
           <div className="h-[250px] flex items-center justify-center">
-            <p className="text-muted-foreground">Bu dönem için veri bulunamadı.</p>
+            <p className="text-muted-foreground">{t('noDataForPeriod')}</p>
           </div>
         )}
       </CardContent>
     </Card>
   );
 }
+
+    

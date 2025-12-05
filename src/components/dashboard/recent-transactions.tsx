@@ -10,10 +10,12 @@ import { useMemo } from 'react';
 import { useAppContext } from '@/lib/hooks/use-app-context';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
 import { Users } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
 
 export function RecentTransactions({ budget }: { budget: Budget }) {
   const { allProfiles } = useAppContext();
+  const { t } = useTranslation();
 
   const getProfile = (userId: string): Profile | undefined => {
     return allProfiles.find(p => p.id === userId);
@@ -28,7 +30,7 @@ export function RecentTransactions({ budget }: { budget: Budget }) {
   return (
     <Card className="rounded-2xl shadow-sm">
       <CardHeader>
-        <CardTitle>Son İşlemler</CardTitle>
+        <CardTitle>{t('recentTransactions')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -61,10 +63,12 @@ export function RecentTransactions({ budget }: { budget: Budget }) {
               </div>
             </div>
           )}) : (
-            <p className="text-sm text-muted-foreground text-center">Henüz işlem yok.</p>
+            <p className="text-sm text-muted-foreground text-center">{t('noTransactionsYet')}</p>
           )}
         </div>
       </CardContent>
     </Card>
   );
 }
+
+    

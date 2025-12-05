@@ -9,6 +9,7 @@ import type { Transaction } from '@/lib/types';
 import { useBudget } from '@/lib/hooks/use-app-context';
 import { isWithinInterval, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 import { MemberAnalysisChart } from './member-analysis-chart';
+import { useTranslation } from '@/hooks/use-translation';
 
 type TimeRange = 'week' | 'month' | 'year';
 
@@ -37,11 +38,12 @@ const filterTransactions = (transactions: Transaction[], range: TimeRange): Tran
 export function AnalyticsView({ budgetId }: { budgetId: string }) {
   const { budget, isLoading } = useBudget(budgetId);
   const [timeRange, setTimeRange] = useState<TimeRange>('month');
+  const { t } = useTranslation();
 
   if (isLoading) {
      return (
         <div className="p-4 md:p-6 text-center">
-            <p>Analiz verileri yükleniyor...</p>
+            <p>{t('loading')}...</p>
         </div>
     )
   }
@@ -49,7 +51,7 @@ export function AnalyticsView({ budgetId }: { budgetId: string }) {
   if (!budget) {
     return (
         <div className="p-4 md:p-6 text-center">
-            <p>Bütçe bulunamadı veya yükleniyor...</p>
+            <p>{t('budgetNotFound')}</p>
         </div>
     )
   }
@@ -60,15 +62,15 @@ export function AnalyticsView({ budgetId }: { budgetId: string }) {
   return (
     <div className="p-4 md:p-6 space-y-6">
       <header>
-        <h1 className="text-3xl font-bold">Analiz</h1>
-        <p className="text-muted-foreground">Finansal performansınız</p>
+        <h1 className="text-3xl font-bold">{t('analysis')}</h1>
+        <p className="text-muted-foreground">{t('yourFinancialPerformance')}</p>
       </header>
 
       <Tabs value={timeRange} onValueChange={(value) => setTimeRange(value as TimeRange)} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="week">Hafta</TabsTrigger>
-          <TabsTrigger value="month">Ay</TabsTrigger>
-          <TabsTrigger value="year">Yıl</TabsTrigger>
+          <TabsTrigger value="week">{t('timeRangeWeek')}</TabsTrigger>
+          <TabsTrigger value="month">{t('timeRangeMonth')}</TabsTrigger>
+          <TabsTrigger value="year">{t('timeRangeYear')}</TabsTrigger>
         </TabsList>
         
         <div className="mt-6 space-y-6">
@@ -81,3 +83,5 @@ export function AnalyticsView({ budgetId }: { budgetId: string }) {
     </div>
   );
 }
+
+    

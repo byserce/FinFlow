@@ -4,8 +4,10 @@ import { formatCurrency } from '@/lib/utils';
 import { Wallet } from 'lucide-react';
 import type { Budget } from '@/lib/types';
 import { useMemo } from 'react';
+import { useTranslation } from '@/hooks/use-translation';
 
 export function BalanceCard({ budget }: { budget: Budget }) {
+  const { t } = useTranslation();
   const balance = useMemo(() => {
     return budget.transactions.reduce((acc, tx) => {
       if (tx.type === 'income') {
@@ -21,7 +23,7 @@ export function BalanceCard({ budget }: { budget: Budget }) {
       <CardContent className="p-6 flex flex-col justify-between h-full">
         <div>
           <p className="text-sm font-medium opacity-80 flex items-center">
-            <Wallet className="w-4 h-4 mr-2" /> Toplam Bakiye
+            <Wallet className="w-4 h-4 mr-2" /> {t('totalBalance')}
           </p>
           <p className="text-4xl font-bold tracking-tighter mt-2">
             {formatCurrency(balance)}
@@ -31,3 +33,5 @@ export function BalanceCard({ budget }: { budget: Budget }) {
     </Card>
   );
 }
+
+    

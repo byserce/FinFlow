@@ -5,12 +5,13 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { AppProvider } from '@/context/app-provider';
 import { AppShell } from '@/components/app-shell';
+import { LanguageProvider } from '@/context/language-provider';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: 'FinFlow',
-  description: 'Kişisel finans yol arkadaşınız.',
+  description: 'Kişisel finans yol arkadaşınız. | Your personal finance companion.',
 };
 
 export default function RootLayout({
@@ -21,11 +22,15 @@ export default function RootLayout({
   return (
     <html lang="tr" suppressHydrationWarning>
       <body className={cn('font-body antialiased', inter.variable)}>
-        <AppProvider>
-          <AppShell>{children}</AppShell>
-        </AppProvider>
+        <LanguageProvider>
+          <AppProvider>
+            <AppShell>{children}</AppShell>
+          </AppProvider>
+        </LanguageProvider>
         <Toaster />
       </body>
     </html>
   );
 }
+
+    

@@ -31,6 +31,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/use-translation';
 
 export function TransactionHistory({ budgetId }: { budgetId: string }) {
   const { user } = useUser();
@@ -39,6 +40,7 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [openCollapsibleId, setOpenCollapsibleId] = useState<string | null>(null);
   const { toast } = useToast();
+  const { t } = useTranslation();
   
   const transactions = useMemo(() => 
     [...(budget?.transactions || [])].sort((a, b) => parseISO(b.date).getTime() - parseISO(a.date).getTime()),
@@ -60,9 +62,9 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
     if (!user) return;
     const result = await deleteTransaction(transactionId, budgetId, user.id);
     if(result.error) {
-      toast({ variant: 'destructive', title: 'Hata', description: result.error });
+      toast({ variant: 'destructive', title: t('error'), description: result.error });
     } else {
-      toast({ title: 'Başarılı', description: 'İşlem silindi.'});
+      toast({ title: t('success'), description: t('transactionDeleteSuccess')});
       await refetch();
     }
   }
@@ -83,9 +85,9 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
       let dayLabel: string;
 
       if (isToday(date)) {
-        dayLabel = 'Bugün';
+        dayLabel = t('today');
       } else if (isYesterday(date)) {
-        dayLabel = 'Dün';
+        dayLabel = t('yesterday');
       } else {
         dayLabel = format(date, 'd MMMM yyyy');
       }
@@ -96,10 +98,10 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
       acc[dayLabel].push(tx);
       return acc;
     }, {} as Record<string, Transaction[]>);
-  }, [filteredTransactions]);
+  }, [filteredTransactions, t]);
   
   if (isLoading) {
-    return <div className="text-center py-10">İşlem geçmişi yükleniyor...</div>;
+    return <div className="text-center py-10">{t('loadingHistory')}</div>;
   }
 
   return (
@@ -107,7 +109,7 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
         <Input
-          placeholder="İşlemlerde ara..."
+          placeholder={t('searchTransactions')}
           className="pl-10 h-12 rounded-xl"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -159,15 +161,15 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
                                   </AlertDialogTrigger>
                                   <AlertDialogContent>
                                     <AlertDialogHeader>
-                                      <AlertDialogTitle>Emin misiniz?</AlertDialogTitle>
+                                      <AlertDialogTitle>{t('areYouSure')}</AlertDialogTitle>
                                       <AlertDialogDescription>
-                                        Bu eylem geri alınamaz. Bu işlem kalıcı olarak silinecektir.
+                                        {t('deleteTransactionWarning')}
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                      <AlertDialogCancel>İptal</AlertDialogCancel>
+                                      <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                                       <AlertDialogAction onClick={() => handleDelete(tx.id)}>
-                                        Sil
+                                        {t('delete')}
                                       </AlertDialogAction>
                                     </AlertDialogFooter>
                                   </AlertDialogContent>
@@ -185,7 +187,7 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
                            {showParticipants && (
                             <CollapsibleContent className="px-4 pb-4">
                                <div className="border-t pt-3 mt-1">
-                                <h4 className='text-xs font-semibold text-muted-foreground mb-2'>Katılımcılar</h4>
+                                <h4 className='text-xs font-semibold text-muted-foreground mb-2'>{t('participants')}</h4>
                                 <div className="flex flex-wrap gap-2">
                                   {participants.map(p => {
                                     const participantProfile = getProfile(p.user_id);
@@ -216,7 +218,7 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
           <Card className="rounded-2xl shadow-sm">
             <CardContent className="p-10">
               <p className="text-center text-muted-foreground">
-                {(transactions || []).length === 0 ? 'Kaydedilmiş bir işleminiz yok.' : 'Aramanızla eşleşen işlem bulunamadı.'}
+                {(transactions || []).length === 0 ? t('noSavedTransactions') : t('noMatchingTransactions')}
               </p>
             </CardContent>
           </Card>
@@ -225,3 +227,5 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
     </div>
   );
 }
+
+    

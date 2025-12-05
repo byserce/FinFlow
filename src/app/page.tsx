@@ -36,6 +36,7 @@ import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/lib/hooks/use-app-context';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function BudgetsPage() {
   const { user, logout, isLoading: isUserLoading } = useUser();
@@ -44,6 +45,7 @@ export default function BudgetsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -52,7 +54,7 @@ export default function BudgetsPage() {
   }, [user, isUserLoading, router]);
 
   if (isUserLoading || !user) {
-    return <div className="flex items-center justify-center h-screen">Yükleniyor...</div>;
+    return <div className="flex items-center justify-center h-screen">{t('loading')}</div>;
   }
   
   const getProfile = (userId: string) => allProfiles.find(p => p.id === userId);
@@ -67,13 +69,13 @@ export default function BudgetsPage() {
     if (result?.error) {
          toast({
             variant: 'destructive',
-            title: 'Hata',
+            title: t('error'),
             description: result.error,
         });
     } else {
         toast({
-            title: 'Başarılı',
-            description: 'Yeni bütçe oluşturuldu.',
+            title: t('success'),
+            description: t('budgetCreateSuccess'),
         });
         await refetch();
         setIsCreateDialogOpen(false);
@@ -90,13 +92,13 @@ export default function BudgetsPage() {
     if (result?.error) {
          toast({
             variant: 'destructive',
-            title: 'Hata',
+            title: t('error'),
             description: result.error,
         });
     } else {
         toast({
-            title: 'Başarılı',
-            description: 'Katılım isteğiniz gönderildi.',
+            title: t('success'),
+            description: t('joinRequestSuccess'),
         });
         await refetch();
         setIsJoinDialogOpen(false);
@@ -109,13 +111,13 @@ export default function BudgetsPage() {
      if (result?.error) {
          toast({
             variant: 'destructive',
-            title: 'Hata',
+            title: t('error'),
             description: result.error,
         });
     } else {
         toast({
-            title: 'Başarılı',
-            description: 'Bütçe silindi.',
+            title: t('success'),
+            description: t('budgetDeleteSuccess'),
         });
         await refetch();
     }
@@ -138,19 +140,19 @@ export default function BudgetsPage() {
                         <AvatarFallback>{user?.display_name?.charAt(0) ?? 'U'}</AvatarFallback>
                     </Avatar>
                     <div>
-                        <h1 className="text-2xl font-bold group-hover:underline">Hoşgeldin, {user?.display_name}</h1>
+                        <h1 className="text-2xl font-bold group-hover:underline">{t('welcomeUser', { name: user?.display_name || '' })}</h1>
                         <p className="text-muted-foreground text-sm md:text-base">
-                            Tüm bütçelerinizi yönetin
+                            {t('manageBudgets')}
                         </p>
                     </div>
                 </Link>
                  <div className="flex items-center md:hidden">
                     <Link href="/profile">
-                        <Button variant="ghost" size="icon" aria-label="Profile Settings">
+                        <Button variant="ghost" size="icon" aria-label={t('profileSettings')}>
                             <Settings className="h-5 w-5" />
                         </Button>
                     </Link>
-                    <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout">
+                    <Button variant="ghost" size="icon" onClick={handleLogout} aria-label={t('logout')}>
                         <LogOut className="h-5 w-5" />
                     </Button>
                  </div>
@@ -159,27 +161,27 @@ export default function BudgetsPage() {
             <Dialog open={isJoinDialogOpen} onOpenChange={setIsJoinDialogOpen}>
               <DialogTrigger asChild>
                  <Button variant="outline" className="w-full md:w-auto">
-                    <UserPlus className="mr-2 h-4 w-4" /> Bütçeye Katıl
+                    <UserPlus className="mr-2 h-4 w-4" /> {t('joinBudget')}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <form action={handleJoinBudgetAction}>
                     <DialogHeader>
-                        <DialogTitle>Bütçeye Katıl</DialogTitle>
+                        <DialogTitle>{t('joinBudgetTitle')}</DialogTitle>
                     </DialogHeader>
                     <div className="py-4">
                         <Input
                         id="join_code"
                         name="join_code"
-                        placeholder="9 haneli katılım kodu"
+                        placeholder={t('joinCodePlaceholder')}
                         required
                         />
                     </div>
                     <DialogFooter>
                         <DialogClose asChild>
-                        <Button variant="outline">İptal</Button>
+                        <Button variant="outline">{t('cancel')}</Button>
                         </DialogClose>
-                        <Button type="submit">İstek Gönder</Button>
+                        <Button type="submit">{t('sendRequest')}</Button>
                     </DialogFooter>
                 </form>
               </DialogContent>
@@ -188,65 +190,65 @@ export default function BudgetsPage() {
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
                 <Button className="w-full md:w-auto">
-                    <Plus className="mr-2 h-4 w-4" /> Yeni Bütçe
+                    <Plus className="mr-2 h-4 w-4" /> {t('newBudget')}
                 </Button>
                 </DialogTrigger>
                 <DialogContent>
                     <form action={handleCreateBudgetAction}>
                         <DialogHeader>
-                            <DialogTitle>Yeni Bütçe Oluştur</DialogTitle>
+                            <DialogTitle>{t('createBudgetTitle')}</DialogTitle>
                             <DialogDescription>
-                                Bütçenize bir isim verin ve amacınıza uygun modu seçin.
+                                {t('createBudgetDescription')}
                             </DialogDescription>
                         </DialogHeader>
                         <div className="py-4 space-y-6">
                              <div className="space-y-2">
-                                <Label htmlFor="name">Bütçe Adı</Label>
+                                <Label htmlFor="name">{t('budgetNameLabel')}</Label>
                                 <Input
                                 id="name"
                                 name="name"
-                                placeholder="Bütçe adı (örn: Aile Bütçesi)"
+                                placeholder={t('budgetNamePlaceholder')}
                                 required
                                 />
                             </div>
                             <RadioGroup name="mode" defaultValue="tracking" className="space-y-4">
-                                <Label>Bütçe Modu</Label>
+                                <Label>{t('budgetModeLabel')}</Label>
                                 <div className="flex items-start p-4 border rounded-lg gap-4 has-[:checked]:bg-muted/50">
                                     <RadioGroupItem value="tracking" id="tracking" className="mt-1"/>
                                     <div className="grid gap-1.5">
                                         <Label htmlFor="tracking" className="font-bold flex items-center gap-2">
-                                            <WalletCards className="w-4 h-4" /> Bütçe Takip Modu
+                                            <WalletCards className="w-4 h-4" /> {t('trackingMode')}
                                         </Label>
-                                        <p className="text-xs text-muted-foreground">Kişisel veya paylaşımlı bütçelerde gelir ve giderleri takip etmek için idealdir.</p>
+                                        <p className="text-xs text-muted-foreground">{t('trackingModeDescription')}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start p-4 border rounded-lg gap-4 has-[:checked]:bg-muted/50">
                                     <RadioGroupItem value="sharing" id="sharing" className="mt-1"/>
                                     <div className="grid gap-1.5">
                                         <Label htmlFor="sharing" className="font-bold flex items-center gap-2">
-                                            <Receipt className="w-4 h-4" /> Harcama Paylaşım Modu
+                                            <Receipt className="w-4 h-4" /> {t('sharingMode')}
                                         </Label>
-                                        <p className="text-xs text-muted-foreground">Arkadaşlarla yapılan ortak harcamaları adil bir şekilde bölüşmek ve borçları takip etmek için kullanılır.</p>
+                                        <p className="text-xs text-muted-foreground">{t('sharingModeDescription')}</p>
                                     </div>
                                 </div>
                             </RadioGroup>
                         </div>
                         <DialogFooter>
                             <DialogClose asChild>
-                            <Button variant="outline">İptal</Button>
+                            <Button variant="outline">{t('cancel')}</Button>
                             </DialogClose>
-                            <Button type="submit">Oluştur</Button>
+                            <Button type="submit">{t('create')}</Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>
             </Dialog>
             <div className="hidden md:flex items-center">
                  <Link href="/profile">
-                    <Button variant="ghost" size="icon" aria-label="Profile Settings">
+                    <Button variant="ghost" size="icon" aria-label={t('profileSettings')}>
                         <Settings className="h-5 w-5" />
                     </Button>
                 </Link>
-                <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout">
+                <Button variant="ghost" size="icon" onClick={handleLogout} aria-label={t('logout')}>
                     <LogOut className="h-5 w-5" />
                 </Button>
             </div>
@@ -256,7 +258,7 @@ export default function BudgetsPage() {
         <div className="space-y-4">
           {isBudgetsLoading ? (
              <div className="text-center py-10">
-                <p className="text-muted-foreground">Bütçeler yükleniyor...</p>
+                <p className="text-muted-foreground">{t('budgetsLoading')}</p>
              </div>
           ) : budgets.length > 0 ? (
             budgets.map((budget) => {
@@ -304,7 +306,7 @@ export default function BudgetsPage() {
                           {formatCurrency(budget.balance)}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          {budget.transactions.length} işlem
+                          {budget.transactions.length} {t('transactions')}
                         </p>
                       </div>
                        <div className='flex items-center'>
@@ -320,15 +322,15 @@ export default function BudgetsPage() {
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader>
-                                    <AlertDialogTitle>Emin misiniz?</AlertDialogTitle>
+                                    <AlertDialogTitle>{t('areYouSure')}</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        Bu eylem geri alınamaz. Bu, &quot;{budget.name}&quot; bütçesini ve içindeki tüm işlemleri kalıcı olarak silecektir.
+                                        {t('deleteBudgetWarning', { budgetName: budget.name })}
                                     </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                    <AlertDialogCancel>İptal</AlertDialogCancel>
+                                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                                     <AlertDialogAction onClick={() => handleDeleteBudgetAction(budget.id)}>
-                                        Sil
+                                        {t('delete')}
                                     </AlertDialogAction>
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
@@ -343,10 +345,10 @@ export default function BudgetsPage() {
           ) : (
             <div className="text-center py-10">
               <p className="text-muted-foreground">
-                Henüz bir bütçe oluşturmadınız.
+                {t('noBudgets')}
               </p>
               <p className="text-muted-foreground">
-                Başlamak için &apos;Yeni Bütçe&apos; düğmesine tıklayın.
+                {t('clickNewBudget')}
               </p>
             </div>
           )}
@@ -355,3 +357,5 @@ export default function BudgetsPage() {
     </PageTransition>
   );
 }
+
+    

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Wand2, Loader2 } from 'lucide-react';
 import type { Transaction } from '@/lib/types';
 import { generateFinancialInsights, type FinancialInsightsOutput } from '@/ai/flows/generate-financial-insights';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface AiInsightsProps {
   transactions: Transaction[];
@@ -15,6 +16,7 @@ export function AiInsights({ transactions }: AiInsightsProps) {
   const [loading, setLoading] = useState(false);
   const [insights, setInsights] = useState<FinancialInsightsOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const handleGenerateInsights = async () => {
     setLoading(true);
@@ -24,7 +26,7 @@ export function AiInsights({ transactions }: AiInsightsProps) {
       const result = await generateFinancialInsights({ transactions });
       setInsights(result);
     } catch (e) {
-      setError('Failed to generate insights. Please try again.');
+      setError(t('failedToGenerate'));
       console.error(e);
     } finally {
       setLoading(false);
@@ -36,10 +38,10 @@ export function AiInsights({ transactions }: AiInsightsProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Wand2 className="text-accent-foreground" />
-          AI Generated Insights
+          {t('aiInsights')}
         </CardTitle>
         <CardDescription>
-          Get a summary of your spending habits and key insights powered by AI.
+          {t('aiInsightsDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -48,10 +50,10 @@ export function AiInsights({ transactions }: AiInsightsProps) {
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
+                {t('generating')}...
               </>
             ) : (
-              'Generate Insights'
+              t('generateInsights')
             )}
           </Button>
         )}
@@ -67,11 +69,11 @@ export function AiInsights({ transactions }: AiInsightsProps) {
         {insights && (
           <div className="space-y-4">
             <div>
-              <h3 className="font-semibold">Summary</h3>
+              <h3 className="font-semibold">{t('summary')}</h3>
               <p className="text-sm text-muted-foreground">{insights.summary}</p>
             </div>
             <div>
-              <h3 className="font-semibold">Key Insights</h3>
+              <h3 className="font-semibold">{t('keyInsights')}</h3>
               <ul className="list-disc pl-5 space-y-1 mt-2 text-sm text-muted-foreground">
                 {insights.insights.map((insight, index) => (
                   <li key={index}>{insight}</li>
@@ -79,7 +81,7 @@ export function AiInsights({ transactions }: AiInsightsProps) {
               </ul>
             </div>
              <Button variant="ghost" size="sm" onClick={handleGenerateInsights} disabled={loading}>
-              Regenerate
+              {t('regenerate')}
             </Button>
           </div>
         )}
@@ -87,3 +89,5 @@ export function AiInsights({ transactions }: AiInsightsProps) {
     </Card>
   );
 }
+
+    

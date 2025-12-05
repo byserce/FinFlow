@@ -7,11 +7,13 @@ import { AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/hooks/use-user';
 import React from 'react';
+import { useTranslation } from '@/hooks/use-translation';
 
 
 function BottomNav() {
   const pathname = usePathname();
   const { user } = useUser();
+  const { t } = useTranslation();
 
   // Extract budgetId from pathname, e.g., /budget/xyz/analytics -> xyz
   const budgetIdMatch = pathname.match(/budget\/([^/]+)/);
@@ -19,10 +21,10 @@ function BottomNav() {
 
   const navItems = [
     // { href: '/', label: 'Bütçeler', icon: Wallet, exact: true }, // Removed from here
-    { href: `/budget/${budgetId}`, label: 'Genel Bakış', icon: Home, exact: true },
-    { href: `/budget/${budgetId}/analytics`, label: 'Analiz', icon: BarChart2 },
-    { href: `/budget/${budgetId}/history`, label: 'Geçmiş', icon: History },
-    { href: `/budget/${budgetId}/settings`, label: 'Ayarlar', icon: Settings },
+    { href: `/budget/${budgetId}`, label: t('overview'), icon: Home, exact: true },
+    { href: `/budget/${budgetId}/analytics`, label: t('analysis'), icon: BarChart2 },
+    { href: `/budget/${budgetId}/history`, label: t('history'), icon: History },
+    { href: `/budget/${budgetId}/settings`, label: t('settings'), icon: Settings },
   ];
   
   const hideOnRoutes = ['/profile'];
@@ -87,3 +89,5 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+    

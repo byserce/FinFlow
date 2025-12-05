@@ -30,6 +30,7 @@ import {
 import { updateMemberStatus, updateMemberRole, removeMember } from "@/app/actions";
 import { useAppContext } from "@/lib/hooks/use-app-context";
 import type { Profile } from "@/lib/types";
+import { useTranslation } from "@/hooks/use-translation";
 
 interface SettingsPageProps {
   params: { budgetId: string };
@@ -41,6 +42,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
   const { refetch, allProfiles } = useAppContext();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
+  const { t } = useTranslation();
 
   const getProfile = (userId: string): Profile | undefined => {
     return allProfiles.find(p => p.id === userId);
@@ -50,7 +52,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
     if (budget?.join_code) {
       navigator.clipboard.writeText(budget.join_code);
       setCopied(true);
-      toast({ title: "Copied!", description: "Join code copied to clipboard." });
+      toast({ title: t('copied'), description: t('copyDescription') });
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -58,9 +60,9 @@ export default function SettingsPage({ params }: SettingsPageProps) {
   const handleStatusUpdate = async (memberId: string, status: 'accepted' | 'rejected') => {
     const { error } = await updateMemberStatus(params.budgetId, memberId, status);
     if (error) {
-      toast({ variant: 'destructive', title: 'Error', description: error });
+      toast({ variant: 'destructive', title: t('error'), description: error });
     } else {
-      toast({ title: 'Success', description: `Request has been ${status}.` });
+      toast({ title: t('success'), description: t('requestStatusSuccess', { status: status }) });
       await refetch();
     }
   };
@@ -68,9 +70,9 @@ export default function SettingsPage({ params }: SettingsPageProps) {
   const handleRoleUpdate = async (memberId: string, role: 'editor' | 'viewer') => {
     const { error } = await updateMemberRole(params.budgetId, memberId, role);
      if (error) {
-      toast({ variant: 'destructive', title: 'Error', description: error });
+      toast({ variant: 'destructive', title: t('error'), description: error });
     } else {
-      toast({ title: 'Success', description: `Member role has been updated.` });
+      toast({ title: t('success'), description: t('roleUpdateSuccess') });
       await refetch();
     }
   }
@@ -78,9 +80,9 @@ export default function SettingsPage({ params }: SettingsPageProps) {
   const handleRemoveMember = async (memberId: string) => {
     const { error } = await removeMember(params.budgetId, memberId);
     if (error) {
-      toast({ variant: 'destructive', title: 'Error', description: error });
+      toast({ variant: 'destructive', title: t('error'), description: error });
     } else {
-      toast({ title: 'Success', description: 'Member has been removed.' });
+      toast({ title: t('success'), description: t('memberRemoveSuccess') });
       await refetch();
     }
   }
@@ -88,7 +90,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
   if (isLoading || !budget) {
     return (
       <PageTransition>
-        <div className="p-4 md:p-6 text-center">Yükleniyor...</div>
+        <div className="p-4 md:p-6 text-center">{t('loading')}...</div>
       </PageTransition>
     );
   }
@@ -110,7 +112,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
     <PageTransition>
       <div className="p-4 md:p-6 space-y-6">
         <header>
-          <h1 className="text-3xl font-bold">Bütçe Ayarları</h1>
+          <h1 className="text-3xl font-bold">{t('budgetSettings')}</h1>
           <p className="text-muted-foreground">{budget.name}</p>
         </header>
 
@@ -118,10 +120,10 @@ export default function SettingsPage({ params }: SettingsPageProps) {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <UserPlus /> Davet Kodu
+                <UserPlus /> {t('inviteCode')}
               </CardTitle>
               <CardDescription>
-                Bu kodu paylaşarak başkalarını bu bütçeye davet edin.
+                {t('inviteCodeDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -138,7 +140,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
         {isOwner && pendingRequests.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Katılım İstekleri</CardTitle>
+              <CardTitle>{t('joinRequests')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {pendingRequests.map(member => {
@@ -156,8 +158,8 @@ export default function SettingsPage({ params }: SettingsPageProps) {
                         </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={() => handleStatusUpdate(member.user_id, 'accepted')}>Onayla</Button>
-                      <Button size="sm" variant="ghost" onClick={() => handleStatusUpdate(member.user_id, 'rejected')}>Reddet</Button>
+                      <Button size="sm" onClick={() => handleStatusUpdate(member.user_id, 'accepted')}>{t('approve')}</Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleStatusUpdate(member.user_id, 'rejected')}>{t('reject')}</Button>
                     </div>
                   </div>
                 )
@@ -169,7 +171,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
         <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users /> Üyeler
+                <Users /> {t('members')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -195,11 +197,11 @@ export default function SettingsPage({ params }: SettingsPageProps) {
                             onValueChange={(value: 'editor' | 'viewer') => handleRoleUpdate(member.user_id, value)}
                           >
                             <SelectTrigger className="w-[120px] h-9">
-                              <SelectValue placeholder="Rol" />
+                              <SelectValue placeholder={t('role')} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="editor">Düzenleyici</SelectItem>
-                              <SelectItem value="viewer">Görüntüleyici</SelectItem>
+                              <SelectItem value="editor">{t('editor')}</SelectItem>
+                              <SelectItem value="viewer">{t('viewer')}</SelectItem>
                             </SelectContent>
                           </Select>
                           <AlertDialog>
@@ -210,22 +212,22 @@ export default function SettingsPage({ params }: SettingsPageProps) {
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>Emin misiniz?</AlertDialogTitle>
+                                <AlertDialogTitle>{t('areYouSure')}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Bu kullanıcıyı bütçeden kalıcı olarak kaldıracaksınız.
+                                  {t('removeMemberWarning')}
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel>İptal</AlertDialogCancel>
+                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                                 <AlertDialogAction onClick={() => handleRemoveMember(member.user_id)}>
-                                  Kaldır
+                                  {t('remove')}
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
                        </div>
                     ) : (
-                      <span className="text-sm font-medium capitalize bg-muted px-2 py-1 rounded-md">{member.role}</span>
+                      <span className="text-sm font-medium capitalize bg-muted px-2 py-1 rounded-md">{t(member.role)}</span>
                     )}
                  </div>
                  )
@@ -237,3 +239,5 @@ export default function SettingsPage({ params }: SettingsPageProps) {
     </PageTransition>
   );
 }
+
+    

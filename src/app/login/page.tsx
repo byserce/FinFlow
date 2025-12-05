@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,14 +31,14 @@ export default function LoginPage() {
     if (error || !data) {
       toast({
         variant: 'destructive',
-        title: 'Hata',
-        description: 'Geçersiz e-posta veya şifre.',
+        title: t('error'),
+        description: t('invalidCredentials'),
       });
     } else {
       localStorage.setItem('active_user', JSON.stringify(data));
       toast({
-        title: 'Başarılı',
-        description: 'Başarıyla giriş yaptınız.',
+        title: t('success'),
+        description: t('loginSuccess'),
       });
       router.push('/');
       router.refresh(); // Force a refresh to reload context
@@ -64,7 +66,7 @@ export default function LoginPage() {
         >
           <polyline points="15 18 9 12 15 6" />
         </svg>{' '}
-        Back
+        {t('back')}
       </Link>
 
       <form
@@ -72,7 +74,7 @@ export default function LoginPage() {
         onSubmit={handleLogin}
       >
         <label className="text-md" htmlFor="email">
-          Email
+          {t('emailLabel')}
         </label>
         <Input
           className="rounded-md px-4 py-2 bg-inherit border mb-6"
@@ -83,7 +85,7 @@ export default function LoginPage() {
           required
         />
         <label className="text-md" htmlFor="password">
-          Password
+          {t('passwordLabel')}
         </label>
         <Input
           className="rounded-md px-4 py-2 bg-inherit border mb-6"
@@ -99,16 +101,18 @@ export default function LoginPage() {
           className="rounded-md px-4 py-2 text-foreground mb-2"
           disabled={loading}
         >
-          {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
+          {loading ? t('loading') : t('login')}
         </Button>
         <Button
           asChild
           variant="outline"
           className="border border-foreground/20 rounded-md px-4 py-2 text-foreground mb-2"
         >
-          <Link href="/signup">Hesabın yok mu? Kaydol</Link>
+          <Link href="/signup">{t('noAccount')}</Link>
         </Button>
       </form>
     </div>
   );
 }
+
+    

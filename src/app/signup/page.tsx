@@ -8,10 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -32,8 +34,8 @@ export default function SignupPage() {
     if (existingUser) {
       toast({
         variant: 'destructive',
-        title: 'Hata',
-        description: 'Bu e-posta adresi zaten kayıtlı.',
+        title: t('error'),
+        description: t('emailInUse'),
       });
       setLoading(false);
       return;
@@ -52,13 +54,13 @@ export default function SignupPage() {
     if (error) {
       toast({
         variant: 'destructive',
-        title: 'Kayıt Hatası',
+        title: t('signupError'),
         description: error.message,
       });
     } else {
       toast({
-        title: 'Başarılı',
-        description: 'Hesabınız oluşturuldu. Lütfen giriş yapın.',
+        title: t('success'),
+        description: t('signupSuccess'),
       });
       router.push('/login');
     }
@@ -85,7 +87,7 @@ export default function SignupPage() {
         >
           <polyline points="15 18 9 12 15 6" />
         </svg>{' '}
-        Back
+        {t('back')}
       </Link>
 
       <form
@@ -93,18 +95,18 @@ export default function SignupPage() {
         onSubmit={handleSignup}
       >
         <label className="text-md" htmlFor="displayName">
-          Adınız
+          {t('displayNameLabel')}
         </label>
         <Input
           className="rounded-md px-4 py-2 bg-inherit border mb-6"
           name="displayName"
           onChange={(e) => setDisplayName(e.target.value)}
           value={displayName}
-          placeholder="Adınız"
+          placeholder={t('displayNamePlaceholder')}
           required
         />
         <label className="text-md" htmlFor="email">
-          Email
+          {t('emailLabel')}
         </label>
         <Input
           className="rounded-md px-4 py-2 bg-inherit border mb-6"
@@ -116,7 +118,7 @@ export default function SignupPage() {
           required
         />
         <label className="text-md" htmlFor="password">
-          Şifre
+          {t('passwordLabel')}
         </label>
         <Input
           className="rounded-md px-4 py-2 bg-inherit border mb-6"
@@ -132,16 +134,18 @@ export default function SignupPage() {
           className="rounded-md px-4 py-2 text-foreground mb-2"
           disabled={loading}
         >
-          {loading ? 'Kaydolunuyor...' : 'Kaydol'}
+          {loading ? t('loading') : t('signup')}
         </Button>
         <Button
           asChild
           variant="outline"
           className="border border-foreground/20 rounded-md px-4 py-2 text-foreground mb-2"
         >
-          <Link href="/login">Zaten bir hesabın var mı? Giriş Yap</Link>
+          <Link href="/login">{t('alreadyHaveAccount')}</Link>
         </Button>
       </form>
     </div>
   );
 }
+
+    

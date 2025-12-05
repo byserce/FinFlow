@@ -36,6 +36,7 @@ import { useAppContext, useBudget } from '@/lib/hooks/use-app-context';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface AddTransactionSheetProps {
     budgetId: string;
@@ -49,6 +50,7 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
   const [category, setCategory] = useState<Category | null>(null);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [payerId, setPayerId] = useState<string | null>(null);
+  const { t } = useTranslation();
   
   const acceptedMembers = budget?.members.filter(m => m.status === 'accepted') || [];
   const [participantIds, setParticipantIds] = useState<string[]>([]);
@@ -83,21 +85,21 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
     event.preventDefault();
 
     if (!user) {
-         toast({ variant: 'destructive', title: 'Hata', description: 'İşlem eklemek için giriş yapmalısınız.' });
+         toast({ variant: 'destructive', title: t('error'), description: t('error_mustBeLoggedIn') });
         return;
     }
     if (!category) {
-        toast({ variant: 'destructive', title: 'Hata', description: 'Lütfen bir kategori seçin.' });
+        toast({ variant: 'destructive', title: t('error'), description: t('error_mustSelectCategory') });
         return;
     }
     
     if (budget?.mode === 'sharing' && !payerId) {
-       toast({ variant: 'destructive', title: 'Hata', description: 'Lütfen harcamayı yapan kişiyi seçin.' });
+       toast({ variant: 'destructive', title: t('error'), description: t('error_mustSelectPayer') });
         return;
     }
     
     if (budget?.mode === 'sharing' && participantIds.length === 0) {
-        toast({ variant: 'destructive', title: 'Hata', description: 'Lütfen en az bir katılımcı seçin.' });
+        toast({ variant: 'destructive', title: t('error'), description: t('error_mustSelectParticipant') });
         return;
     }
 
@@ -113,9 +115,9 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
     const result = await addTransaction(formData);
 
     if (result?.error) {
-        toast({ variant: 'destructive', title: 'Hata', description: result.error, });
+        toast({ variant: 'destructive', title: t('error'), description: result.error, });
     } else {
-        toast({ title: 'Başarılı', description: 'İşlem başarıyla eklendi.' });
+        toast({ title: t('success'), description: t('transactionAddSuccess') });
         await refetch();
         setOpen(false);
         // Reset form state if needed
@@ -151,7 +153,7 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
       >
         <SheetHeader className="p-4 border-b">
           <SheetTitle className="text-center text-xl">
-             {budget.mode === 'sharing' ? 'Harcama Ekle' : 'İşlem Ekle'}
+             {budget.mode === 'sharing' ? t('addExpense') : t('addTransaction')}
           </SheetTitle>
         </SheetHeader>
         <form 
@@ -183,7 +185,7 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
                         )}
                         size="sm"
                     >
-                        Gelir
+                        {t('income')}
                     </Button>
                     <Button
                         type="button"
@@ -194,7 +196,7 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
                         )}
                         size="sm"
                     >
-                        Gider
+                        {t('expense')}
                     </Button>
                     </div>
                 )}
@@ -202,7 +204,7 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
 
               {/* Categories */}
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-2">Kategori</h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('category')}</h3>
                  <input type="hidden" name="category" value={category || ''} />
                 <div className="grid grid-cols-4 gap-4">
                   {categoriesToShow.map((cat) => {
@@ -226,11 +228,11 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
 
              <div className="space-y-2">
                 <h3 className="text-sm font-medium text-muted-foreground">
-                    Harcamayı Yapan
+                    {t('payer')}
                 </h3>
                 <Select value={payerId ?? undefined} onValueChange={setPayerId}>
                     <SelectTrigger className="h-12 rounded-xl">
-                        <SelectValue placeholder="Harcamayı yapanı seçin" />
+                        <SelectValue placeholder={t('selectPayer')} />
                     </SelectTrigger>
                     <SelectContent>
                         {budget.mode === 'tracking' && (
@@ -239,7 +241,7 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
                                     <div className="flex items-center justify-center h-8 w-8 rounded-full bg-muted">
                                         <Users className="h-4 w-4 text-muted-foreground" />
                                     </div>
-                                    <span>Ortak Harcama</span>
+                                    <span>{t('commonExpense')}</span>
                             </div>
                             </SelectItem>
                         )}
@@ -264,7 +266,7 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
             {budget.mode === 'sharing' && (
                 <div className="space-y-3">
                     <h3 className="text-sm font-medium text-muted-foreground">
-                        Katılımcılar
+                        {t('participants')}
                     </h3>
                     <div className="space-y-2">
                         {acceptedMembers.map(member => {
@@ -303,7 +305,7 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {date ? format(date, 'PPP') : <span>Tarih Seç</span>}
+                      {date ? format(date, 'PPP') : <span>{t('selectDate')}</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -317,7 +319,7 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
                 </Popover>
                 <Input
                   name="note"
-                  placeholder="Not (isteğe bağlı)"
+                  placeholder={t('note')}
                   className="h-12 rounded-xl"
                 />
               </div>
@@ -326,7 +328,7 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
           <div className="p-4 border-t sticky bottom-0 bg-background">
             <motion.div whileTap={{ scale: 0.98 }}>
               <Button type="submit" size="lg" className="w-full h-14 rounded-xl text-lg">
-                İşlemi Kaydet
+                {t('saveTransaction')}
               </Button>
             </motion.div>
           </div>
@@ -335,3 +337,5 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
     </Sheet>
   );
 }
+
+    

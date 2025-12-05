@@ -5,12 +5,14 @@ import type { Transaction } from '@/lib/types';
 import { useMemo } from 'react';
 import { format, parseISO } from 'date-fns';
 import { formatCurrency } from '@/lib/utils';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface TrendChartProps {
   transactions: Transaction[];
 }
 
 export function TrendChart({ transactions }: TrendChartProps) {
+  const { t } = useTranslation();
   const data = useMemo(() => {
     if (transactions.length === 0) return [];
     
@@ -44,7 +46,7 @@ export function TrendChart({ transactions }: TrendChartProps) {
   return (
     <Card className="rounded-2xl shadow-sm">
       <CardHeader>
-        <CardTitle>Balance Trend</CardTitle>
+        <CardTitle>{t('balanceTrend')}</CardTitle>
       </CardHeader>
       <CardContent>
         {data.length > 0 ? (
@@ -86,10 +88,12 @@ export function TrendChart({ transactions }: TrendChartProps) {
         </div>
         ) : (
            <div className="h-[250px] flex items-center justify-center">
-            <p className="text-muted-foreground">Not enough data to show a trend.</p>
+            <p className="text-muted-foreground">{t('notEnoughData')}</p>
           </div>
         )}
       </CardContent>
     </Card>
   );
 }
+
+    

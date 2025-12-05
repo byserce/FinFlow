@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { useUser } from '@/hooks/use-user';
 import { useBudget, useAppContext } from '@/lib/hooks/use-app-context';
 import { DebtSummary } from '@/components/sharing/debt-summary';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface BudgetDashboardPageProps {
   params: { budgetId: string };
@@ -21,6 +22,7 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
   const { user } = useUser();
   const { budget, isLoading } = useBudget(params.budgetId);
   const { allProfiles } = useAppContext();
+  const { t } = useTranslation();
   
   const currentUserMember = budget?.members.find(m => m.user_id === user?.id);
   const canEdit = currentUserMember?.role === 'owner' || currentUserMember?.role === 'editor';
@@ -29,7 +31,7 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
     return (
         <PageTransition>
             <div className="flex flex-col items-center justify-center h-[80vh] text-center p-4">
-                <h1 className="text-2xl font-bold">Bütçe Yükleniyor...</h1>
+                <h1 className="text-2xl font-bold">{t('budgetLoading')}</h1>
             </div>
         </PageTransition>
     )
@@ -39,14 +41,14 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
     return (
       <PageTransition>
         <div className="flex flex-col items-center justify-center h-[80vh] text-center p-4">
-          <h1 className="text-2xl font-bold">Bütçe bulunamadı</h1>
+          <h1 className="text-2xl font-bold">{t('budgetNotFound')}</h1>
           <p className="text-muted-foreground mt-2">
-            Bu bütçe mevcut değil veya silinmiş olabilir.
+            {t('budgetNotFoundDescription')}
           </p>
           <Link href="/" passHref>
              <Button variant="link" className="mt-4">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Bütçelerime Geri Dön
+                {t('backToBudgets')}
             </Button>
           </Link>
         </div>
@@ -69,7 +71,7 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
         <header className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <Link href="/" passHref>
-              <Button variant="outline" size="icon" aria-label="Tüm Bütçeler">
+              <Button variant="outline" size="icon" aria-label={t('backToBudgets')}>
                 <Wallet className="h-5 w-5" />
               </Button>
             </Link>
@@ -79,7 +81,7 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
                 {budget.name}
               </p>
               <h1 className="text-2xl font-bold text-foreground">
-                {isSharingMode ? 'Borç Durumu' : 'Genel Bakış'}
+                {isSharingMode ? t('debtStatus') : t('overview')}
               </h1>
             </div>
           </div>
@@ -116,3 +118,5 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
     </PageTransition>
   );
 }
+
+    

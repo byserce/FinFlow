@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Transaction } from '@/lib/types';
 import { useMemo } from 'react';
 import { CATEGORY_INFO } from '@/lib/constants';
+import { useTranslation } from '@/hooks/use-translation';
 
 const COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)'];
 
@@ -12,6 +13,7 @@ interface SpendingChartProps {
 }
 
 export function SpendingChart({ transactions }: SpendingChartProps) {
+  const { t } = useTranslation();
   const data = useMemo(() => {
     const expenseTransactions = transactions.filter((t) => t.type === 'expense');
     const spendingByCategory = expenseTransactions.reduce((acc, transaction) => {
@@ -32,7 +34,7 @@ export function SpendingChart({ transactions }: SpendingChartProps) {
   return (
     <Card className="rounded-2xl shadow-sm">
       <CardHeader>
-        <CardTitle>Spending Breakdown</CardTitle>
+        <CardTitle>{t('spendingBreakdown')}</CardTitle>
       </CardHeader>
       <CardContent>
         {data.length > 0 ? (
@@ -68,10 +70,12 @@ export function SpendingChart({ transactions }: SpendingChartProps) {
         </div>
         ) : (
           <div className="h-[250px] flex items-center justify-center">
-            <p className="text-muted-foreground">No spending data for this period.</p>
+            <p className="text-muted-foreground">{t('noSpendingData')}</p>
           </div>
         )}
       </CardContent>
     </Card>
   );
 }
+
+    

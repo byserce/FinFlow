@@ -6,6 +6,7 @@ import type { Budget, Debt, Profile, TransactionParticipant } from '@/lib/types'
 import { useAppContext } from '@/lib/hooks/use-app-context';
 import { Scale, Users, ArrowRight, Minus, Plus } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useTranslation } from '@/hooks/use-translation';
 
 
 const calculateDebts = (budget: Budget, participants: TransactionParticipant[]): { debts: Debt[], balances: { [key: string]: number }, totalSpending: number } => {
@@ -85,6 +86,7 @@ const calculateDebts = (budget: Budget, participants: TransactionParticipant[]):
 
 export function DebtSummary({ budget }: { budget: Budget }) {
     const { allProfiles, transactionParticipants, isLoading } = useAppContext();
+    const { t } = useTranslation();
     const getProfile = (userId: string): Profile | undefined => allProfiles.find(p => p.id === userId);
 
     const { debts, balances, totalSpending } = useMemo(() => {
@@ -95,7 +97,7 @@ export function DebtSummary({ budget }: { budget: Budget }) {
     const acceptedMembers = budget.members.filter(m => m.status === 'accepted');
 
     if (isLoading) {
-        return <p>Yükleniyor...</p>
+        return <p>{t('loading')}...</p>
     }
 
     return (
@@ -103,7 +105,7 @@ export function DebtSummary({ budget }: { budget: Budget }) {
              <Card className="rounded-2xl shadow-sm">
                 <CardHeader className='pb-2'>
                     <CardTitle className='flex items-center gap-2 text-base font-medium text-muted-foreground'>
-                        <Scale className='w-4 h-4' /> Toplam Harcama
+                        <Scale className='w-4 h-4' /> {t('totalSpending')}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -113,8 +115,8 @@ export function DebtSummary({ budget }: { budget: Budget }) {
 
             <Card className="rounded-2xl shadow-sm">
                 <CardHeader>
-                    <CardTitle className="text-lg">Kim Kime Borçlu?</CardTitle>
-                    <CardDescription>Hesaplanan borç ve alacak durumu.</CardDescription>
+                    <CardTitle className="text-lg">{t('whoOwesWhom')}</CardTitle>
+                    <CardDescription>{t('debtSummaryDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {debts.length > 0 ? (
@@ -152,7 +154,7 @@ export function DebtSummary({ budget }: { budget: Budget }) {
                         </div>
                     ) : (
                         <p className="text-center text-muted-foreground py-4">
-                            {acceptedMembers.length < 2 ? "Borç hesabı için en az 2 üye olmalıdır." : "Henüz kimsenin kimseye borcu yok. Herkes heasbını ödemiş."}
+                            {acceptedMembers.length < 2 ? t('atLeastTwoMembers') : t('noDebts')}
                         </p>
                     )}
                 </CardContent>
@@ -160,7 +162,7 @@ export function DebtSummary({ budget }: { budget: Budget }) {
 
             <Card className="rounded-2xl shadow-sm">
                 <CardHeader>
-                    <CardTitle className='text-lg'>Net Bakiye Durumu</CardTitle>
+                    <CardTitle className='text-lg'>{t('netBalance')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                      <div className="space-y-3">
@@ -191,3 +193,5 @@ export function DebtSummary({ budget }: { budget: Budget }) {
         </div>
     )
 }
+
+    
