@@ -11,6 +11,7 @@ import Image from 'next/image';
 import { FcGoogle } from 'react-icons/fc';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface GoogleJwtPayload {
   email: string;
@@ -69,9 +70,9 @@ function LoginScreen() {
 
   return (
     <div className="fixed inset-0 z-50 flex h-screen flex-col bg-background p-6 sm:p-8 overflow-hidden overscroll-none touch-none">
-        
+      <ScrollArea className="flex-1">
         {/* Main content area */}
-        <div className="flex-1 flex flex-col items-center justify-center text-center w-full max-w-md mx-auto">
+        <div className="flex-1 flex flex-col items-center justify-center text-center w-full max-w-md mx-auto min-h-[calc(100vh-120px)] py-8">
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -101,10 +102,11 @@ function LoginScreen() {
                 </p>
             </motion.div>
         </div>
+      </ScrollArea>
 
         {/* Bottom button area */}
         <motion.div
-            className="w-full max-w-sm mx-auto pb-safe-area" // iPhone alt çubuğu için güvenli alan
+            className="w-full max-w-sm mx-auto pb-safe-area pt-4"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
