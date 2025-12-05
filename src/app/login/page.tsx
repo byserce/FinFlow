@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/use-translation';
 import { useUser } from '@/hooks/use-user';
 import { useEffect } from 'react';
+import Image from 'next/image';
 
 interface GoogleJwtPayload {
   email: string;
@@ -73,7 +74,8 @@ export default function LoginPage() {
   return (
     <GoogleOAuthProvider clientId={googleClientId}>
         <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-4 items-center">
-        <div className="text-center mb-4">
+        <div className="text-center mb-8">
+            <Image src="/logo.png" alt="FinFlow Logo" width={96} height={96} className="mx-auto mb-4 rounded-2xl" />
             <h1 className="text-3xl font-bold">{t('welcome')}</h1>
             <p className="text-muted-foreground">{t('manageBudgets')}</p>
         </div>

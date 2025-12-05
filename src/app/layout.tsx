@@ -10,17 +10,27 @@ import { LanguageProvider } from '@/context/language-provider';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'FinFlow',
-  description: 'Kişisel finans yol arkadaşınız. | Your personal finance companion.',
+  title: 'FinFlow | Kişisel Bütçe ve Gider Takibi',
+  description: 'FinFlow, kişisel finansınızı yönetmek, bütçelerinizi oluşturmak, gelir ve giderlerinizi takip etmek ve arkadaşlarınızla harcamaları kolayca bölüşmek için modern bir web uygulamasıdır.',
+  keywords: ['bütçe', 'gider takibi', 'finans', 'para yönetimi', 'harcama paylaşımı', 'budget', 'expense tracker', 'finance', 'money management'],
   manifest: '/manifest.json',
   icons: {
+    icon: '/logo.png',
     apple: "/icons/icon-192x192.png",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#FFFFFF',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#F5F5F5' },
+    { media: '(prefers-color-scheme: dark)', color: '#09090b' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
+
 
 export default function RootLayout({
   children,

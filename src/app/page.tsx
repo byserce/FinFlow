@@ -287,16 +287,23 @@ export default function BudgetsPage() {
 
               return (
               <Card key={budget.id} className="rounded-2xl shadow-sm hover:shadow-md transition-shadow group">
-                 <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <Link href={`/budget/${budget.id}`} className="flex-grow">
+                <div className="p-6 flex justify-between items-start">
+                    <Link href={`/budget/${budget.id}`} className="flex-grow space-y-4">
                         <CardTitle className="flex items-center">
                             {getIcon()}
                             {budget.name}
                         </CardTitle>
-                      </Link>
-                      <div className="flex items-center">
-                        <div className="flex items-center -space-x-2 mr-2">
+                        <div>
+                            <div className="text-2xl font-bold">
+                            {formatCurrency(budget.balance, budget.currency, locale)}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                            {budget.transactions.length} {t('transactions')}
+                            </p>
+                        </div>
+                    </Link>
+                    <div className="flex flex-col items-end justify-between h-full flex-shrink-0 ml-4">
+                        <div className="flex items-center -space-x-2">
                             {acceptedMembers.slice(0, 3).map(member => {
                             const profile = getProfile(member.user_id);
                             return (
@@ -313,7 +320,7 @@ export default function BudgetsPage() {
                             )}
                         </div>
                         {user.id === budget.owner_id && (
-                             <AlertDialog>
+                            <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                     <Button variant="ghost" size="icon" className="text-destructive h-8 w-8 transition-transform active:scale-90">
                                         <Trash2 className="h-4 w-4" />
@@ -334,27 +341,9 @@ export default function BudgetsPage() {
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
-                         )}
-                      </div>
+                        )}
                     </div>
-                  </CardHeader>
-                <Link href={`/budget/${budget.id}`} className="block">
-                  <CardContent>
-                    <div className="flex justify-between items-end">
-                      <div>
-                        <div className="text-2xl font-bold">
-                          {formatCurrency(budget.balance, budget.currency, locale)}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {budget.transactions.length} {t('transactions')}
-                        </p>
-                      </div>
-                       <div className='opacity-0 group-hover:opacity-100 transition-opacity'>
-                         <ArrowRight className="text-muted-foreground" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Link>
+                </div>
               </Card>
             )})
           ) : (
