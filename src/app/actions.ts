@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
 function generateJoinCode() {
-  return Math.random().toString(36).substring(2, 11);
+  return Math.random().toString(36).substring(2, 8);
 }
 
 export async function createBudget(formData: FormData) {
@@ -53,13 +53,36 @@ export async function createBudget(formData: FormData) {
 export async function deleteBudget(budgetId: string) {
     const supabase = createClient();
     
-    const { error } = await supabase
+    // First, delete related entries in budget_members
+    const { error: membersError } = await supabase
+        .from('budget_members')
+        .delete()
+        .eq('plan_id', budgetId);
+
+    if (membersError) {
+        console.error('Error deleting budget members:', membersError);
+        return { error: 'Failed to prepare budget for deletion. Please try again.' };
+    }
+
+    // Second, delete related entries in budget_transactions
+    const { error: transactionsError } = await supabase
+        .from('budget_transactions')
+        .delete()
+        .eq('plan_id', budgetId);
+        
+    if (transactionsError) {
+        console.error('Error deleting budget transactions:', transactionsError);
+        return { error: 'Failed to clear transactions for deletion. Please try again.' };
+    }
+    
+    // Finally, delete the budget plan itself
+    const { error: planError } = await supabase
         .from('budget_plans')
         .delete()
         .eq('id', budgetId);
 
-    if (error) {
-        console.error('Error deleting budget:', error);
+    if (planError) {
+        console.error('Error deleting budget:', planError);
         return {
             error: 'Bütçe silinemedi. Lütfen tekrar deneyin.'
         }
@@ -77,6 +100,24 @@ export async function addTransaction(formData: FormData) {
             error: 'Authentication error: User ID is missing.'
         }
     }
+    
+    // Security Check: Verify user's role before adding transaction
+    const { data: member, error: memberError } = await supabase
+        .from('budget_members')
+        .select('role')
+        .eq('plan_id', budgetId)
+        .eq('user_id', authorId)
+        .eq('status', 'accepted')
+        .single();
+    
+    if (memberError || !member) {
+        return { error: 'You are not a member of this budget.' };
+    }
+
+    if (member.role === 'viewer') {
+        return { error: 'You do not have permission to add transactions to this budget.' };
+    }
+    // End Security Check
 
     const transactionData = {
         plan_id: budgetId,
@@ -157,8 +198,6 @@ export async function joinBudgetByCode(formData: FormData) {
         return { error: 'Could not send join request. Please try again.' };
     }
 
-    revalidatePath(`/budget/${plan.id}/settings`);
-
     return { success: true };
 }
 
@@ -184,7 +223,6 @@ export async function updateMemberStatus(planId: string, memberId: string, statu
         if (error) return { error: 'Failed to accept request.' };
     }
     
-    revalidatePath(`/budget/${planId}/settings`);
     return { success: true };
 }
 
@@ -202,7 +240,6 @@ export async function updateMemberRole(planId: string, memberId: string, role: '
         return { error: 'Failed to update member role.' };
     }
 
-    revalidatePath(`/budget/${planId}/settings`);
     return { success: true };
 }
 
@@ -221,6 +258,5 @@ export async function removeMember(planId: string, memberId: string) {
         return { error: 'Failed to remove member.' };
     }
 
-    revalidatePath(`/budget/${planId}/settings`);
     return { success: true };
 }

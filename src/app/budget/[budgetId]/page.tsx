@@ -22,6 +22,9 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
   const { user } = useUser();
   const { budget, isLoading } = useBudget(params.budgetId);
   
+  const currentUserMember = budget?.members.find(m => m.user_id === user?.id);
+  const canEdit = currentUserMember?.role === 'owner' || currentUserMember?.role === 'editor';
+
   if (isLoading) {
     return (
         <PageTransition>
@@ -72,7 +75,7 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
         <QuickStats budget={budget} />
         <RecentTransactions budget={budget} />
       </div>
-      <AddTransactionSheet budgetId={budget.id} />
+      {canEdit && <AddTransactionSheet budgetId={budget.id} />}
     </PageTransition>
   );
 }
