@@ -27,27 +27,27 @@ import { Plus, Calendar as CalendarIcon, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, CATEGORY_INFO } from '@/lib/constants';
-import type { Category, Profile, Member } from '@/lib/types';
+import type { Category, Profile, Member, Budget } from '@/lib/types';
 import { ScrollArea } from './ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { addTransaction } from '@/app/actions';
 import { useUser } from '@/hooks/use-user';
-import { useAppContext } from '@/lib/hooks/use-app-context';
+import { useAppContext, useBudget } from '@/lib/hooks/use-app-context';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 
 interface AddTransactionSheetProps {
     budgetId: string;
-    members: Member[];
 }
 
 
-export function AddTransactionSheet({ budgetId, members }: AddTransactionSheetProps) {
+export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
+  const { budget } = useBudget(budgetId);
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [category, setCategory] = useState<Category | null>(null);
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [payerId, setPayerId] = useState<string>('common');
+  const [payerId, setPayerId] = useState<string | null>(null);
 
   const { toast } = useToast();
   const { user } = useUser();
@@ -81,12 +81,28 @@ export function AddTransactionSheet({ budgetId, members }: AddTransactionSheetPr
         });
         return;
     }
+    
+    if (budget?.mode === 'sharing' && !payerId) {
+       toast({
+            variant: 'destructive',
+            title: 'Hata',
+            description: 'Lütfen harcamayı yapan kişiyi seçin.',
+        });
+        return;
+    }
 
     const formData = new FormData(event.currentTarget);
     formData.set('budgetId', budgetId);
     formData.set('author_id', user.id);
-    formData.set('payer_id', payerId);
+    if(payerId) {
+        formData.set('payer_id', payerId);
+    }
     
+    // For sharing mode, type is always 'expense'
+    if (budget?.mode === 'sharing') {
+      formData.set('type', 'expense');
+    }
+
     const result = await addTransaction(formData);
 
     if (result?.error) {
@@ -104,9 +120,12 @@ export function AddTransactionSheet({ budgetId, members }: AddTransactionSheetPr
         setOpen(false);
     }
   }
+  
+  if (!budget) return null;
 
-  const categoriesToShow = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
-  const acceptedMembers = members.filter(m => m.status === 'accepted');
+  const transactionType = budget.mode === 'sharing' ? 'expense' : type;
+  const categoriesToShow = transactionType === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const acceptedMembers = budget.members.filter(m => m.status === 'accepted');
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -128,7 +147,9 @@ export function AddTransactionSheet({ budgetId, members }: AddTransactionSheetPr
         className="h-[90vh] rounded-t-2xl p-0 flex flex-col"
       >
         <SheetHeader className="p-4 border-b">
-          <SheetTitle className="text-center text-xl">İşlem Ekle</SheetTitle>
+          <SheetTitle className="text-center text-xl">
+             {budget.mode === 'sharing' ? 'Harcama Ekle' : 'İşlem Ekle'}
+          </SheetTitle>
         </SheetHeader>
         <form 
             onSubmit={handleFormSubmit}
@@ -147,31 +168,33 @@ export function AddTransactionSheet({ budgetId, members }: AddTransactionSheetPr
                   required
                   autoFocus
                 />
-                <div className="flex rounded-full bg-muted p-1">
-                   <input type="hidden" name="type" value={type} />
-                  <Button
-                    type="button"
-                    onClick={() => handleTypeChange('income')}
-                    className={cn(
-                      'rounded-full h-8',
-                      type === 'income' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground'
-                    )}
-                    size="sm"
-                  >
-                    Gelir
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => handleTypeChange('expense')}
-                    className={cn(
-                      'rounded-full h-8',
-                      type === 'expense' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground'
-                    )}
-                    size="sm"
-                  >
-                    Gider
-                  </Button>
-                </div>
+                {budget.mode === 'tracking' && (
+                    <div className="flex rounded-full bg-muted p-1">
+                    <input type="hidden" name="type" value={type} />
+                    <Button
+                        type="button"
+                        onClick={() => handleTypeChange('income')}
+                        className={cn(
+                        'rounded-full h-8',
+                        type === 'income' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground'
+                        )}
+                        size="sm"
+                    >
+                        Gelir
+                    </Button>
+                    <Button
+                        type="button"
+                        onClick={() => handleTypeChange('expense')}
+                        className={cn(
+                        'rounded-full h-8',
+                        type === 'expense' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground'
+                        )}
+                        size="sm"
+                    >
+                        Gider
+                    </Button>
+                    </div>
+                )}
               </div>
 
               {/* Categories */}
@@ -194,25 +217,29 @@ export function AddTransactionSheet({ budgetId, members }: AddTransactionSheetPr
                         <span className="text-xs text-center">{info.label}</span>
                       </div>
                     );
-                  })}
+})}
                 </div>
               </div>
 
              <div className="space-y-2">
-                <h3 className="text-sm font-medium text-muted-foreground">İşlemi Yapan</h3>
-                <Select value={payerId} onValueChange={setPayerId}>
+                <h3 className="text-sm font-medium text-muted-foreground">
+                    {budget.mode === 'sharing' ? 'Harcamayı Yapan' : 'İşlemi Yapan'}
+                </h3>
+                <Select value={payerId ?? undefined} onValueChange={setPayerId}>
                     <SelectTrigger className="h-12 rounded-xl">
-                        <SelectValue placeholder="İşlemi yapanı seçin" />
+                        <SelectValue placeholder={budget.mode === 'sharing' ? 'Harcamayı yapanı seçin' : 'İşlemi yapanı seçin'} />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="common">
-                           <div className="flex items-center gap-3">
-                                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-muted">
-                                    <Users className="h-4 w-4 text-muted-foreground" />
-                                </div>
-                                <span>Ortak Harcama</span>
-                           </div>
-                        </SelectItem>
+                        {budget.mode === 'tracking' && (
+                            <SelectItem value="common">
+                            <div className="flex items-center gap-3">
+                                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-muted">
+                                        <Users className="h-4 w-4 text-muted-foreground" />
+                                    </div>
+                                    <span>Ortak Harcama</span>
+                            </div>
+                            </SelectItem>
+                        )}
                         {acceptedMembers.map(member => {
                             const profile = getProfile(member.user_id);
                             return (

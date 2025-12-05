@@ -49,3 +49,9 @@ export type AppContextType = {
   isLoading: boolean;
   refetch: () => Promise<void>;
 };
+
+export type Debt = {
+  from: string; // user_id of the person who owes money
+  to: string; // user_id of the person who is owed money
+  amount: number;
+};

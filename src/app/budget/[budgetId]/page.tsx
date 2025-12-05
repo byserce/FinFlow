@@ -6,17 +6,16 @@ import { QuickStats } from '@/components/dashboard/quick-stats';
 import { RecentTransactions } from '@/components/dashboard/recent-transactions';
 import { AddTransactionSheet } from '@/components/add-transaction-sheet';
 import { PageTransition } from '@/components/page-transition';
-import { User, ArrowLeft, Wallet, Users } from 'lucide-react';
+import { User, ArrowLeft, Wallet, Users, Receipt } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/hooks/use-user';
 import { useBudget, useAppContext } from '@/lib/hooks/use-app-context';
-
+import { DebtSummary } from '@/components/sharing/debt-summary';
 
 interface BudgetDashboardPageProps {
   params: { budgetId: string };
 }
-
 
 export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps) {
   const { user } = useUser();
@@ -56,6 +55,7 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
   }
   
   const acceptedMembers = budget.members.filter(m => m.status === 'accepted');
+  const isSharingMode = budget.mode === 'sharing';
 
   return (
     <PageTransition>
@@ -69,10 +69,12 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
             </Link>
             <div>
               <p className="text-sm text-muted-foreground flex items-center">
-                {acceptedMembers.length > 1 ? <Users className="w-4 h-4 mr-2" /> : <User className="w-4 h-4 mr-2" />}
+                {isSharingMode ? <Receipt className="w-4 h-4 mr-2" /> : (acceptedMembers.length > 1 ? <Users className="w-4 h-4 mr-2" /> : <User className="w-4 h-4 mr-2" />)}
                 {budget.name}
               </p>
-              <h1 className="text-2xl font-bold text-foreground">Genel Bakış</h1>
+              <h1 className="text-2xl font-bold text-foreground">
+                {isSharingMode ? 'Borç Durumu' : 'Genel Bakış'}
+              </h1>
             </div>
           </div>
           <div className="flex items-center -space-x-2">
@@ -92,12 +94,19 @@ export default function BudgetDashboardPage({ params }: BudgetDashboardPageProps
              )}
           </div>
         </header>
+        
+        {isSharingMode ? (
+            <DebtSummary budget={budget} />
+        ) : (
+            <>
+                <BalanceCard budget={budget} />
+                <QuickStats budget={budget} />
+            </>
+        )}
 
-        <BalanceCard budget={budget} />
-        <QuickStats budget={budget} />
         <RecentTransactions budget={budget} />
       </div>
-      {canEdit && <AddTransactionSheet budgetId={budget.id} members={budget.members} />}
+      {canEdit && <AddTransactionSheet budgetId={budget.id} />}
     </PageTransition>
   );
 }
