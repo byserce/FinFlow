@@ -118,6 +118,20 @@ export type Database = {
             created_at?: string
             status?: "pending" | "accepted" | "rejected"
         }
+      },
+      transaction_participants: {
+          Row: {
+              transaction_id: string
+              user_id: string
+          },
+          Insert: {
+              transaction_id: string
+              user_id: string
+          },
+          Update: {
+              transaction_id?: string
+              user_id?: string
+          }
       }
     }
     Views: {

@@ -10,6 +10,7 @@ export type Profile = Database['public']['Tables']['budget_profiles']['Row'];
 export type Transaction = Database['public']['Tables']['budget_transactions']['Row'];
 export type Plan = Database['public']['Tables']['budget_plans']['Row'];
 export type Member = Database['public']['Tables']['budget_members']['Row'];
+export type TransactionParticipant = Database['public']['Tables']['transaction_participants']['Row'];
 
 
 export type Budget = Plan & {
@@ -44,6 +45,7 @@ export type CategoryInfo = {
 export type AppContextType = {
   budgets: Budget[];
   transactionsByPlan: { [key: string]: Transaction[] };
+  transactionParticipants: TransactionParticipant[];
   allProfiles: Profile[];
   supabase: SupabaseClient<Database>;
   isLoading: boolean;

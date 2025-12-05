@@ -96,6 +96,7 @@ export async function addTransaction(formData: FormData) {
     const budgetId = formData.get('budgetId') as string;
     const authorId = formData.get('author_id') as string;
     const payerId = formData.get('payer_id') as string | null;
+    const participantIds = formData.getAll('participant_ids') as string[];
 
     if (!authorId) {
         return {
@@ -103,10 +104,9 @@ export async function addTransaction(formData: FormData) {
         }
     }
     
-    // Security Check: Verify user's role before adding transaction
     const { data: member, error: memberError } = await supabase
         .from('budget_members')
-        .select('role')
+        .select('role, budget_plans(mode)')
         .eq('plan_id', budgetId)
         .eq('user_id', authorId)
         .eq('status', 'accepted')
@@ -119,7 +119,6 @@ export async function addTransaction(formData: FormData) {
     if (member.role === 'viewer') {
         return { error: 'You do not have permission to add transactions to this budget.' };
     }
-    // End Security Check
 
     const transactionData = {
         plan_id: budgetId,
@@ -132,14 +131,37 @@ export async function addTransaction(formData: FormData) {
         note: formData.get('note') as string,
     };
 
-    const { error } = await supabase
+    const { data: newTransaction, error } = await supabase
         .from('budget_transactions')
-        .insert([transactionData]);
+        .insert([transactionData])
+        .select()
+        .single();
 
-    if (error) {
+    if (error || !newTransaction) {
         console.error('Error adding transaction:', error);
         return {
             error: 'Could not add the transaction. Please try again.'
+        }
+    }
+    
+    const budgetMode = member.budget_plans?.mode;
+    if (budgetMode === 'sharing' && participantIds.length > 0) {
+        const participantData = participantIds.map(userId => ({
+            transaction_id: newTransaction.id,
+            user_id: userId,
+        }));
+        
+        const { error: participantsError } = await supabase
+            .from('transaction_participants')
+            .insert(participantData);
+
+        if (participantsError) {
+            console.error('Error adding transaction participants:', participantsError);
+            // Rollback the transaction
+            await supabase.from('budget_transactions').delete().eq('id', newTransaction.id);
+            return {
+                error: 'Could not assign participants to the transaction. Please try again.'
+            }
         }
     }
 }

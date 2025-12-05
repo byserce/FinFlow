@@ -2,36 +2,46 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
-import type { Budget, Debt, Profile } from '@/lib/types';
+import type { Budget, Debt, Profile, TransactionParticipant } from '@/lib/types';
 import { useAppContext } from '@/lib/hooks/use-app-context';
 import { Scale, Users, ArrowRight, Minus, Plus } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
-const calculateDebts = (budget: Budget): { debts: Debt[], balances: { [key: string]: number }, totalSpending: number } => {
+const calculateDebts = (budget: Budget, participants: TransactionParticipant[]): { debts: Debt[], balances: { [key: string]: number }, totalSpending: number } => {
   const members = budget.members.filter(m => m.status === 'accepted');
-  if (members.length < 2) {
+  if (members.length === 0) {
     return { debts: [], balances: {}, totalSpending: 0 };
   }
-
   const memberIds = members.map(m => m.user_id);
-
-  const spendingByUser: { [key: string]: number } = {};
-  memberIds.forEach(id => spendingByUser[id] = 0);
-
-  let totalSpending = 0;
-  budget.transactions.forEach(tx => {
-    if (tx.type === 'expense' && tx.payer_id && memberIds.includes(tx.payer_id)) {
-      spendingByUser[tx.payer_id] += tx.amount;
-      totalSpending += tx.amount;
-    }
-  });
-
-  const sharePerPerson = totalSpending / members.length;
-  
   const balances: { [key: string]: number } = {};
-  memberIds.forEach(id => {
-    balances[id] = spendingByUser[id] - sharePerPerson;
+  memberIds.forEach(id => balances[id] = 0);
+  let totalSpending = 0;
+
+  budget.transactions.forEach(tx => {
+    if (tx.type !== 'expense' || !tx.payer_id || !memberIds.includes(tx.payer_id)) return;
+    
+    totalSpending += tx.amount;
+    
+    const txParticipants = participants.filter(p => p.transaction_id === tx.id);
+    const participantUserIds = txParticipants.map(p => p.user_id);
+
+    // If no participants are recorded for this transaction, assume it's split among all members
+    const splitBetween = participantUserIds.length > 0 ? participantUserIds : memberIds;
+    
+    if (splitBetween.length === 0) return;
+
+    const sharePerPerson = tx.amount / splitBetween.length;
+
+    // Add to payer's balance
+    balances[tx.payer_id] += tx.amount;
+
+    // Subtract from each participant's balance
+    splitBetween.forEach(userId => {
+      if (balances[userId] !== undefined) {
+        balances[userId] -= sharePerPerson;
+      }
+    });
   });
 
   const debtors = Object.entries(balances).filter(([, balance]) => balance < 0).map(([id, balance]) => ({ id, amount: -balance }));
@@ -39,34 +49,54 @@ const calculateDebts = (budget: Budget): { debts: Debt[], balances: { [key: stri
   
   const debts: Debt[] = [];
 
-  debtors.forEach(debtor => {
-    let amountOwed = debtor.amount;
-    creditors.forEach(creditor => {
-      if (amountOwed <= 0 || creditor.amount <= 0) return;
+  debtors.sort((a, b) => b.amount - a.amount);
+  creditors.sort((a, b) => b.amount - a.amount);
 
-      const amountToTransfer = Math.min(amountOwed, creditor.amount);
+  let debtorIndex = 0;
+  let creditorIndex = 0;
 
-      debts.push({
-        from: debtor.id,
-        to: creditor.id,
-        amount: amountToTransfer
-      });
+  while(debtorIndex < debtors.length && creditorIndex < creditors.length) {
+    const debtor = debtors[debtorIndex];
+    const creditor = creditors[creditorIndex];
+    const amountToTransfer = Math.min(debtor.amount, creditor.amount);
 
-      amountOwed -= amountToTransfer;
-      creditor.amount -= amountToTransfer;
-    });
-  });
+    if (amountToTransfer > 0.01) { // Avoid tiny floating point debts
+        debts.push({
+            from: debtor.id,
+            to: creditor.id,
+            amount: amountToTransfer
+        });
+
+        debtor.amount -= amountToTransfer;
+        creditor.amount -= amountToTransfer;
+    }
+
+    if (debtor.amount < 0.01) {
+        debtorIndex++;
+    }
+    if (creditor.amount < 0.01) {
+        creditorIndex++;
+    }
+  }
 
   return { debts, balances, totalSpending };
 };
 
 
 export function DebtSummary({ budget }: { budget: Budget }) {
-    const { allProfiles } = useAppContext();
+    const { allProfiles, transactionParticipants, isLoading } = useAppContext();
     const getProfile = (userId: string): Profile | undefined => allProfiles.find(p => p.id === userId);
 
-    const { debts, balances, totalSpending } = useMemo(() => calculateDebts(budget), [budget]);
+    const { debts, balances, totalSpending } = useMemo(() => {
+        if (isLoading) return { debts: [], balances: {}, totalSpending: 0 };
+        return calculateDebts(budget, transactionParticipants)
+    }, [budget, transactionParticipants, isLoading]);
+
     const acceptedMembers = budget.members.filter(m => m.status === 'accepted');
+
+    if (isLoading) {
+        return <p>Yükleniyor...</p>
+    }
 
     return (
         <div className="space-y-6">
@@ -78,7 +108,6 @@ export function DebtSummary({ budget }: { budget: Budget }) {
                 </CardHeader>
                 <CardContent>
                     <p className="text-3xl font-bold">{formatCurrency(totalSpending)}</p>
-                    <p className="text-xs text-muted-foreground">Kişi başı düşen: {formatCurrency(totalSpending / (acceptedMembers.length || 1))}</p>
                 </CardContent>
             </Card>
 
@@ -139,6 +168,7 @@ export function DebtSummary({ budget }: { budget: Budget }) {
                              const profile = getProfile(userId);
                              if (!profile) return null;
                              const isCreditor = balance > 0;
+                             const isDebtor = balance < 0;
                              return (
                                 <div key={userId} className="flex items-center justify-between">
                                     <div className='flex items-center gap-3'>
@@ -148,8 +178,8 @@ export function DebtSummary({ budget }: { budget: Budget }) {
                                         </Avatar>
                                         <span className='font-medium'>{profile.display_name}</span>
                                     </div>
-                                    <div className={`flex items-center font-bold ${isCreditor ? 'text-green-500' : 'text-destructive'}`}>
-                                        {isCreditor ? <Plus className='w-4 h-4 mr-1'/> : <Minus className='w-4 h-4 mr-1'/>}
+                                    <div className={`flex items-center font-bold ${isCreditor ? 'text-green-500' : isDebtor ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                        {isCreditor ? <Plus className='w-4 h-4 mr-1'/> : isDebtor ? <Minus className='w-4 h-4 mr-1'/> : null}
                                         {formatCurrency(Math.abs(balance))}
                                     </div>
                                 </div>

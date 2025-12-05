@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Sheet,
@@ -34,7 +34,8 @@ import { addTransaction } from '@/app/actions';
 import { useUser } from '@/hooks/use-user';
 import { useAppContext, useBudget } from '@/lib/hooks/use-app-context';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-
+import { Checkbox } from './ui/checkbox';
+import { Label } from './ui/label';
 
 interface AddTransactionSheetProps {
     budgetId: string;
@@ -48,6 +49,15 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
   const [category, setCategory] = useState<Category | null>(null);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [payerId, setPayerId] = useState<string | null>(null);
+  
+  const acceptedMembers = budget?.members.filter(m => m.status === 'accepted') || [];
+  const [participantIds, setParticipantIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (budget?.mode === 'sharing') {
+      setParticipantIds(acceptedMembers.map(m => m.user_id));
+    }
+  }, [budget?.mode, budget?.members]);
 
   const { toast } = useToast();
   const { user } = useUser();
@@ -62,62 +72,56 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
     setCategory(null);
   }
 
+  const handleParticipantChange = (userId: string) => {
+    setParticipantIds(prev => 
+      prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]
+    );
+  };
+
+
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!user) {
-         toast({
-            variant: 'destructive',
-            title: 'Hata',
-            description: 'İşlem eklemek için giriş yapmalısınız.',
-        });
+         toast({ variant: 'destructive', title: 'Hata', description: 'İşlem eklemek için giriş yapmalısınız.' });
         return;
     }
     if (!category) {
-        toast({
-            variant: 'destructive',
-            title: 'Hata',
-            description: 'Lütfen bir kategori seçin.',
-        });
+        toast({ variant: 'destructive', title: 'Hata', description: 'Lütfen bir kategori seçin.' });
         return;
     }
     
     if (budget?.mode === 'sharing' && !payerId) {
-       toast({
-            variant: 'destructive',
-            title: 'Hata',
-            description: 'Lütfen harcamayı yapan kişiyi seçin.',
-        });
+       toast({ variant: 'destructive', title: 'Hata', description: 'Lütfen harcamayı yapan kişiyi seçin.' });
+        return;
+    }
+    
+    if (budget?.mode === 'sharing' && participantIds.length === 0) {
+        toast({ variant: 'destructive', title: 'Hata', description: 'Lütfen en az bir katılımcı seçin.' });
         return;
     }
 
     const formData = new FormData(event.currentTarget);
     formData.set('budgetId', budgetId);
     formData.set('author_id', user.id);
-    if(payerId) {
-        formData.set('payer_id', payerId);
-    }
-    
-    // For sharing mode, type is always 'expense'
+    if(payerId) formData.set('payer_id', payerId);
     if (budget?.mode === 'sharing') {
       formData.set('type', 'expense');
+      participantIds.forEach(id => formData.append('participant_ids', id));
     }
 
     const result = await addTransaction(formData);
 
     if (result?.error) {
-        toast({
-            variant: 'destructive',
-            title: 'Hata',
-            description: result.error,
-        });
+        toast({ variant: 'destructive', title: 'Hata', description: result.error, });
     } else {
-        toast({
-            title: 'Başarılı',
-            description: 'İşlem başarıyla eklendi.',
-        });
+        toast({ title: 'Başarılı', description: 'İşlem başarıyla eklendi.' });
         await refetch();
         setOpen(false);
+        // Reset form state if needed
+        setCategory(null);
+        setPayerId(null);
+        setParticipantIds(acceptedMembers.map(m => m.user_id));
     }
   }
   
@@ -125,7 +129,6 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
 
   const transactionType = budget.mode === 'sharing' ? 'expense' : type;
   const categoriesToShow = transactionType === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
-  const acceptedMembers = budget.members.filter(m => m.status === 'accepted');
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -223,11 +226,11 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
 
              <div className="space-y-2">
                 <h3 className="text-sm font-medium text-muted-foreground">
-                    {budget.mode === 'sharing' ? 'Harcamayı Yapan' : 'İşlemi Yapan'}
+                    Harcamayı Yapan
                 </h3>
                 <Select value={payerId ?? undefined} onValueChange={setPayerId}>
                     <SelectTrigger className="h-12 rounded-xl">
-                        <SelectValue placeholder={budget.mode === 'sharing' ? 'Harcamayı yapanı seçin' : 'İşlemi yapanı seçin'} />
+                        <SelectValue placeholder="Harcamayı yapanı seçin" />
                     </SelectTrigger>
                     <SelectContent>
                         {budget.mode === 'tracking' && (
@@ -257,6 +260,35 @@ export function AddTransactionSheet({ budgetId }: AddTransactionSheetProps) {
                     </SelectContent>
                 </Select>
              </div>
+
+            {budget.mode === 'sharing' && (
+                <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                        Katılımcılar
+                    </h3>
+                    <div className="space-y-2">
+                        {acceptedMembers.map(member => {
+                            const profile = getProfile(member.user_id);
+                            return (
+                                <div key={member.user_id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50">
+                                    <Checkbox 
+                                        id={`participant-${member.user_id}`}
+                                        checked={participantIds.includes(member.user_id)}
+                                        onCheckedChange={() => handleParticipantChange(member.user_id)}
+                                    />
+                                    <Label htmlFor={`participant-${member.user_id}`} className="flex items-center gap-3 cursor-pointer w-full">
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarImage src={profile?.photo_url ?? undefined} />
+                                            <AvatarFallback>{profile?.display_name?.charAt(0) ?? '?'}</AvatarFallback>
+                                        </Avatar>
+                                        <span>{profile?.display_name ?? 'Bilinmeyen'}</span>
+                                    </Label>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            )}
 
               {/* Date and Note */}
               <div className="grid grid-cols-2 gap-4">

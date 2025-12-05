@@ -51,9 +51,18 @@
           "type": "string",
           "format": "date-time",
           "description": "The timestamp when the budget was created."
+        },
+        "join_code": {
+            "type": "string",
+            "description": "A unique, short code to join this budget."
+        },
+        "mode": {
+            "type": "string",
+            "enum": ["tracking", "sharing"],
+            "description": "The mode of the budget, either for personal tracking or for sharing expenses."
         }
       },
-      "required": ["name", "ownerId", "members", "createdAt"]
+      "required": ["name", "ownerId", "members", "createdAt", "mode"]
     },
     "Transaction": {
       "title": "Transaction",
@@ -85,9 +94,29 @@
         "authorId": {
           "type": "string",
           "description": "The UID of the user who created the transaction. Must be one of the budget's members."
+        },
+        "payer_id": {
+            "type": "string",
+            "description": "The UID of the user who paid for the transaction. Null if it's a common transaction."
         }
       },
       "required": ["amount", "type", "category", "date", "authorId"]
+    },
+    "TransactionParticipant": {
+      "title": "Transaction Participant",
+      "description": "Links a user to a transaction they participated in, used for splitting costs.",
+      "type": "object",
+      "properties": {
+        "transaction_id": {
+          "type": "string",
+          "description": "The ID of the transaction."
+        },
+        "user_id": {
+          "type": "string",
+          "description": "The ID of the user who participated."
+        }
+      },
+      "required": ["transaction_id", "user_id"]
     }
   },
   "auth": {
@@ -111,6 +140,12 @@
         "$ref": "#/entities/Transaction"
       },
       "description": "Sub-collection for transactions within a specific budget. Access is inherited from the parent budget; only budget members can read/write transactions."
+    },
+    "/budgets/{budgetId}/transactions/{transactionId}/participants/{userId}": {
+        "schema": {
+            "$ref": "#/entities/TransactionParticipant"
+        },
+        "description": "Links a user to a transaction they participated in."
     }
   }
 }
