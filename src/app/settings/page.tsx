@@ -1,3 +1,4 @@
+'use client';
 import { PageTransition } from "@/components/page-transition";
 import { Settings as SettingsIcon } from "lucide-react";
 import { useTranslation } from "@/hooks/use-translation";
@@ -14,5 +15,3 @@ export default function SettingsPage() {
     </PageTransition>
   );
 }
-
-    

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -13,6 +13,12 @@ export const metadata: Metadata = {
   title: 'FinFlow',
   description: 'Kişisel finans yol arkadaşınız. | Your personal finance companion.',
   manifest: '/manifest.json',
+  icons: {
+    apple: "/icons/icon-192x192.png",
+  },
+};
+
+export const viewport: Viewport = {
   themeColor: '#FFFFFF',
 };
 
