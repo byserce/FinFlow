@@ -4,6 +4,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import type { Profile } from '@/lib/types';
+import { v4 as uuidv4 } from 'uuid';
 
 function generateJoinCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -27,9 +28,11 @@ export async function handleGoogleLogin(email: string, name: string, picture: st
 
   // If no user is found (and it's the specific 'no rows' error), create one.
   if (fetchError && fetchError.code === 'PGRST116') {
+    const newUserId = uuidv4();
     const { data: newProfile, error: insertError } = await supabase
       .from('budget_profiles')
       .insert({
+        id: newUserId,
         email: email,
         display_name: name,
         photo_url: picture,
