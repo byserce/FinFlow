@@ -26,12 +26,10 @@ export function BalanceCard({ budget }: { budget: Budget }) {
             <Wallet className="w-4 h-4 mr-2" /> {t('totalBalance')}
           </p>
           <p className="text-4xl font-bold tracking-tighter mt-2">
-            {formatCurrency(balance)}
+            {formatCurrency(balance, budget.currency)}
           </p>
         </div>
       </CardContent>
     </Card>
   );
 }
-
-    

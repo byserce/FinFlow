@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import type { Transaction, Member, Profile } from '@/lib/types';
 import { useMemo } from 'react';
 import { formatCurrency } from '@/lib/utils';
-import { useAppContext } from '@/lib/hooks/use-app-context';
+import { useAppContext, useBudget } from '@/lib/hooks/use-app-context';
 import { useTranslation } from '@/hooks/use-translation';
 
 interface MemberAnalysisChartProps {
@@ -16,6 +16,8 @@ interface MemberAnalysisChartProps {
 export function MemberAnalysisChart({ transactions, members, mode }: MemberAnalysisChartProps) {
   const { allProfiles } = useAppContext();
   const { t } = useTranslation();
+  const budgetId = transactions[0]?.plan_id;
+  const { budget } = useBudget(budgetId);
   
   const getProfile = (userId: string): Profile | undefined => {
     return allProfiles.find(p => p.id === userId);
@@ -87,9 +89,9 @@ export function MemberAnalysisChart({ transactions, members, mode }: MemberAnaly
               <BarChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false}/>
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => formatCurrency(value as number)}/>
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => formatCurrency(value as number, budget?.currency || 'USD')}/>
                 <Tooltip
-                  formatter={(value: number) => formatCurrency(value)}
+                  formatter={(value: number) => formatCurrency(value, budget?.currency || 'USD')}
                   contentStyle={{
                     backgroundColor: 'hsl(var(--background))',
                     borderRadius: 'var(--radius)',
@@ -112,5 +114,3 @@ export function MemberAnalysisChart({ transactions, members, mode }: MemberAnaly
     </Card>
   );
 }
-
-    

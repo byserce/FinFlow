@@ -6,6 +6,7 @@ import { useMemo } from 'react';
 import { format, parseISO } from 'date-fns';
 import { formatCurrency } from '@/lib/utils';
 import { useTranslation } from '@/hooks/use-translation';
+import { useBudget } from '@/lib/hooks/use-app-context';
 
 interface TrendChartProps {
   transactions: Transaction[];
@@ -13,6 +14,9 @@ interface TrendChartProps {
 
 export function TrendChart({ transactions }: TrendChartProps) {
   const { t } = useTranslation();
+  const budgetId = transactions[0]?.plan_id;
+  const { budget } = useBudget(budgetId);
+  
   const data = useMemo(() => {
     if (transactions.length === 0) return [];
     
@@ -75,7 +79,7 @@ export function TrendChart({ transactions }: TrendChartProps) {
                 tickFormatter={(value) => `$${Number(value) / 1000}k`}
               />
               <Tooltip 
-                 formatter={(value: number) => [formatCurrency(value), 'Balance']}
+                 formatter={(value: number) => [formatCurrency(value, budget?.currency || 'USD'), 'Balance']}
                  contentStyle={{
                     backgroundColor: 'hsl(var(--background))',
                     borderRadius: 'var(--radius)',
@@ -95,5 +99,3 @@ export function TrendChart({ transactions }: TrendChartProps) {
     </Card>
   );
 }
-
-    

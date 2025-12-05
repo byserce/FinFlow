@@ -26,6 +26,7 @@ export default function ProfilePage() {
 
   const [displayName, setDisplayName] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState('');
+  const [defaultCurrency, setDefaultCurrency] = useState('USD');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const avatarOptions = Array.from({ length: 30 }, (_, i) => `https://picsum.photos/seed/${i + 1}/100/100`);
@@ -37,6 +38,7 @@ export default function ProfilePage() {
     if (user) {
       setDisplayName(user.display_name || '');
       setSelectedAvatar(user.photo_url || '');
+      setDefaultCurrency(user.default_currency || 'USD');
     }
   }, [user, isLoading, router]);
 
@@ -50,6 +52,7 @@ export default function ProfilePage() {
     formData.append('userId', user.id);
     formData.append('displayName', displayName);
     formData.append('photoURL', selectedAvatar);
+    formData.append('default_currency', defaultCurrency);
 
     const result = await updateUserProfile(formData);
 
@@ -61,7 +64,7 @@ export default function ProfilePage() {
       });
     } else {
         // Update local storage to reflect changes immediately
-      const updatedUser = { ...user, display_name: displayName, photo_url: selectedAvatar };
+      const updatedUser = { ...user, display_name: displayName, photo_url: selectedAvatar, default_currency: defaultCurrency };
       localStorage.setItem('active_user', JSON.stringify(updatedUser));
       // Manually trigger a re-fetch in the useUser hook
       await loadUser();
@@ -117,18 +120,33 @@ export default function ProfilePage() {
                   required
                 />
               </div>
-              
-              <div className="space-y-2">
-                <Label>{t('language')}</Label>
-                <Select value={language} onValueChange={(value) => setLanguage(value as 'tr' | 'en')}>
-                    <SelectTrigger>
-                        <SelectValue placeholder={t('language')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="tr">{t('turkish')}</SelectItem>
-                        <SelectItem value="en">{t('english')}</SelectItem>
-                    </SelectContent>
-                </Select>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>{t('language')}</Label>
+                  <Select value={language} onValueChange={(value) => setLanguage(value as 'tr' | 'en')}>
+                      <SelectTrigger>
+                          <SelectValue placeholder={t('language')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="tr">{t('turkish')}</SelectItem>
+                          <SelectItem value="en">{t('english')}</SelectItem>
+                      </SelectContent>
+                  </Select>
+                </div>
+                 <div className="space-y-2">
+                  <Label>Default Currency</Label>
+                  <Select value={defaultCurrency} onValueChange={setDefaultCurrency}>
+                      <SelectTrigger>
+                          <SelectValue placeholder="Select currency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="USD">USD ($)</SelectItem>
+                          <SelectItem value="EUR">EUR (€)</SelectItem>
+                          <SelectItem value="TRY">TRY (₺)</SelectItem>
+                      </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -164,5 +182,3 @@ export default function ProfilePage() {
     </PageTransition>
   );
 }
-
-    

@@ -23,6 +23,10 @@
           "type": "string",
           "format": "date-time",
           "description": "The timestamp when the user account was created."
+        },
+        "default_currency": {
+          "type": "string",
+          "description": "The user's default currency code for new budgets."
         }
       },
       "required": ["displayName", "email", "createdAt"]
@@ -60,9 +64,13 @@
             "type": "string",
             "enum": ["tracking", "sharing"],
             "description": "The mode of the budget, either for personal tracking or for sharing expenses."
+        },
+        "currency": {
+            "type": "string",
+            "description": "The currency code for the budget (e.g., USD, EUR, TRY)."
         }
       },
-      "required": ["name", "ownerId", "members", "createdAt", "mode"]
+      "required": ["name", "ownerId", "members", "createdAt", "mode", "currency"]
     },
     "Transaction": {
       "title": "Transaction",

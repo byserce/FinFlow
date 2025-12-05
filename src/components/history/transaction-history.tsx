@@ -100,7 +100,7 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
     }, {} as Record<string, Transaction[]>);
   }, [filteredTransactions, t]);
   
-  if (isLoading) {
+  if (isLoading || !budget) {
     return <div className="text-center py-10">{t('loadingHistory')}</div>;
   }
 
@@ -149,7 +149,7 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
                             </div>
                             <div className={`font-medium mr-2 ${tx.type === 'income' ? 'text-green-500' : 'text-foreground'}`}>
                                {tx.type === 'income' ? '+' : '-'}
-                               {formatCurrency(tx.amount)}
+                               {formatCurrency(tx.amount, budget.currency)}
                             </div>
                             <div className='flex items-center'>
                               {canEdit && (
@@ -227,5 +227,3 @@ export function TransactionHistory({ budgetId }: { budgetId: string }) {
     </div>
   );
 }
-
-    

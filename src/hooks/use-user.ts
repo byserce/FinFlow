@@ -8,7 +8,7 @@ export function useUser() {
     const [user, setUser] = useState<Profile | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const loadUser = useCallback(() => {
+    const loadUser = useCallback(async () => {
         try {
             const userJson = localStorage.getItem(USER_STORAGE_KEY);
             if (userJson) {

@@ -59,7 +59,7 @@ export function RecentTransactions({ budget }: { budget: Budget }) {
                 }`}
               >
                 {tx.type === 'income' ? '+' : '-'}
-                {formatCurrency(tx.amount)}
+                {formatCurrency(tx.amount, budget.currency)}
               </div>
             </div>
           )}) : (
@@ -70,5 +70,3 @@ export function RecentTransactions({ budget }: { budget: Budget }) {
     </Card>
   );
 }
-
-    

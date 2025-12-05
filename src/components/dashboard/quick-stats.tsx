@@ -35,7 +35,7 @@ export function QuickStats({ budget }: { budget: Budget }) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {formatCurrency(monthlyIncome)}
+            {formatCurrency(monthlyIncome, budget.currency)}
           </div>
           <p className="text-xs text-muted-foreground">{t('thisMonth')}</p>
         </CardContent>
@@ -47,7 +47,7 @@ export function QuickStats({ budget }: { budget: Budget }) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {formatCurrency(monthlyExpenses)}
+            {formatCurrency(monthlyExpenses, budget.currency)}
           </div>
           <p className="text-xs text-muted-foreground">{t('thisMonth')}</p>
         </CardContent>
@@ -55,5 +55,3 @@ export function QuickStats({ budget }: { budget: Budget }) {
     </div>
   );
 }
-
-    

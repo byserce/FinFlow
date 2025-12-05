@@ -17,6 +17,7 @@ export type Database = {
           created_at: string
           join_code: string | null
           mode: "tracking" | "sharing"
+          currency: string
         }
         Insert: {
           id?: string
@@ -25,6 +26,7 @@ export type Database = {
           created_at?: string
           join_code?: string | null
           mode?: "tracking" | "sharing"
+          currency: string
         }
         Update: {
           id?: string
@@ -33,6 +35,7 @@ export type Database = {
           created_at?: string
           join_code?: string | null
           mode?: "tracking" | "sharing"
+          currency?: string
         }
       },
       budget_transactions: {
@@ -80,6 +83,7 @@ export type Database = {
           email: string | null
           photo_url: string | null
           password?: string | null
+          default_currency: string | null
         }
         Insert: {
           id: string
@@ -87,6 +91,7 @@ export type Database = {
           email?: string | null
           photo_url?: string | null
           password?: string | null
+          default_currency?: string | null
         }
         Update: {
           id?: string
@@ -94,6 +99,7 @@ export type Database = {
           email?: string | null
           photo_url?: string | null
           password?: string | null
+          default_currency?: string | null
         }
       },
       budget_members: {

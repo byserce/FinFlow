@@ -109,7 +109,7 @@ export function DebtSummary({ budget }: { budget: Budget }) {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-3xl font-bold">{formatCurrency(totalSpending)}</p>
+                    <p className="text-3xl font-bold">{formatCurrency(totalSpending, budget.currency)}</p>
                 </CardContent>
             </Card>
 
@@ -137,7 +137,7 @@ export function DebtSummary({ budget }: { budget: Budget }) {
                                 </div>
                                 
                                 <div className="flex flex-col items-center text-center">
-                                    <span className='font-bold text-destructive'>{formatCurrency(debt.amount)}</span>
+                                    <span className='font-bold text-destructive'>{formatCurrency(debt.amount, budget.currency)}</span>
                                     <ArrowRight className="h-4 w-4 text-muted-foreground" />
                                 </div>
 
@@ -182,7 +182,7 @@ export function DebtSummary({ budget }: { budget: Budget }) {
                                     </div>
                                     <div className={`flex items-center font-bold ${isCreditor ? 'text-green-500' : isDebtor ? 'text-destructive' : 'text-muted-foreground'}`}>
                                         {isCreditor ? <Plus className='w-4 h-4 mr-1'/> : isDebtor ? <Minus className='w-4 h-4 mr-1'/> : null}
-                                        {formatCurrency(Math.abs(balance))}
+                                        {formatCurrency(Math.abs(balance), budget.currency)}
                                     </div>
                                 </div>
                              )
@@ -193,5 +193,3 @@ export function DebtSummary({ budget }: { budget: Budget }) {
         </div>
     )
 }
-
-    

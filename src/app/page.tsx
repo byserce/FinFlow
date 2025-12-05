@@ -37,6 +37,7 @@ import { useAppContext } from '@/lib/hooks/use-app-context';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useTranslation } from '@/hooks/use-translation';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function BudgetsPage() {
   const { user, logout, isLoading: isUserLoading } = useUser();
@@ -202,14 +203,29 @@ export default function BudgetsPage() {
                             </DialogDescription>
                         </DialogHeader>
                         <div className="py-4 space-y-6">
-                             <div className="space-y-2">
-                                <Label htmlFor="name">{t('budgetNameLabel')}</Label>
-                                <Input
-                                id="name"
-                                name="name"
-                                placeholder={t('budgetNamePlaceholder')}
-                                required
-                                />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="name">{t('budgetNameLabel')}</Label>
+                                    <Input
+                                    id="name"
+                                    name="name"
+                                    placeholder={t('budgetNamePlaceholder')}
+                                    required
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="currency">Currency</Label>
+                                    <Select name="currency" defaultValue={user.default_currency || 'USD'}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select currency" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="USD">USD ($)</SelectItem>
+                                            <SelectItem value="EUR">EUR (€)</SelectItem>
+                                            <SelectItem value="TRY">TRY (₺)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
                             <RadioGroup name="mode" defaultValue="tracking" className="space-y-4">
                                 <Label>{t('budgetModeLabel')}</Label>
@@ -303,7 +319,7 @@ export default function BudgetsPage() {
                     <div className="flex justify-between items-end">
                       <div>
                         <div className="text-2xl font-bold">
-                          {formatCurrency(budget.balance)}
+                          {formatCurrency(budget.balance, budget.currency)}
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {budget.transactions.length} {t('transactions')}
@@ -357,5 +373,3 @@ export default function BudgetsPage() {
     </PageTransition>
   );
 }
-
-    

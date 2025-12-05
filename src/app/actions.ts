@@ -13,6 +13,7 @@ export async function createBudget(formData: FormData) {
   const name = formData.get('name') as string;
   const ownerId = formData.get('owner_id') as string;
   const mode = formData.get('mode') as 'tracking' | 'sharing';
+  const currency = formData.get('currency') as string;
 
   if (!ownerId) {
     return {
@@ -25,7 +26,7 @@ export async function createBudget(formData: FormData) {
   // 1. Create the new budget plan
   const { data: budgetData, error: budgetError } = await supabase
     .from('budget_plans')
-    .insert([{ name, owner_id: ownerId, join_code: joinCode, mode }])
+    .insert([{ name, owner_id: ownerId, join_code: joinCode, mode, currency }])
     .select()
     .single();
 
@@ -339,6 +340,7 @@ export async function updateUserProfile(formData: FormData) {
     const userId = formData.get('userId') as string;
     const displayName = formData.get('displayName') as string;
     const photoURL = formData.get('photoURL') as string;
+    const defaultCurrency = formData.get('default_currency') as string;
 
     if (!userId) {
         return { error: 'User not authenticated.' };
@@ -348,7 +350,8 @@ export async function updateUserProfile(formData: FormData) {
         .from('budget_profiles')
         .update({
             display_name: displayName,
-            photo_url: photoURL
+            photo_url: photoURL,
+            default_currency: defaultCurrency
         })
         .eq('id', userId)
         .select()
