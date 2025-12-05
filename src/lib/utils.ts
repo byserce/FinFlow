@@ -9,6 +9,7 @@ export function formatCurrency(amount: number, currencyCode: string = 'USD') {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: currencyCode,
+    currencyDisplay: 'symbol',
     minimumFractionDigits: 2,
   }).format(amount);
 }
